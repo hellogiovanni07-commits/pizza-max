@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pizza Max Berlin — Stone-oven pizza, delivered hot</title>
+<meta name="description" content="Pizza Max in Berlin-Pankow: stone-oven pizza made from fresh ingredients, dough and sauce made in house. Standard 26 cm, Maxi 32 cm, Wumbo 38 cm. Pickup and delivery.">
+<meta name="theme-color" content="#2e7d32">
+<meta property="og:title" content="Pizza Max Berlin">
+<meta property="og:description" content="Stone-oven pizza from fresh ingredients, delivered hot in the box.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23e3a453'/%3E%3Ccircle cx='32' cy='32' r='24' fill='%23f3cf7c'/%3E%3Ccircle cx='24' cy='26' r='5' fill='%23c4352e'/%3E%3Ccircle cx='40' cy='24' r='5' fill='%23c4352e'/%3E%3Ccircle cx='34' cy='41' r='5' fill='%23c4352e'/%3E%3C/svg%3E">
+<!-- TechNext brand type: Plus Jakarta Sans (display), Inter (body), Caveat (hand). Self-hosted: no request
+     leaves this site for fonts or scripts (GDPR). -->
+<link rel="preload" href="fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // first visit of the session: the open-the-box intro (not with reduced motion or a deep link; ?intro forces it)
+  (function () {
+    var force = /[?&]intro(?:[=&]|$)/.test(location.search), seen = false;
+    try { seen = sessionStorage.getItem('pm-intro') === '1'; } catch (e) {}
+    if (force || (!seen && !location.hash && !matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+      document.documentElement.classList.add('intro-on');
+      // if the script never arrives, never trap the page behind the intro
+      setTimeout(function () { if (!window.pmIntroReady) document.documentElement.classList.remove('intro-on'); }, 6000);
+    }
+  })();
+</script>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/three.module.min.js",
+  "three/addons/": "./vendor/three/addons/"
+} }
+</script>
+</head>
+<body>
+
+<!-- ===== INTRO: lift the lid (first visit only) ===== -->
+<div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle" aria-describedby="introHelp">
+  <div class="intro-bg" aria-hidden="true"></div>
+  <div class="intro-stage" id="introStage" aria-hidden="true"></div>
+  <h2 class="sr-only" id="introTitle">Welcome to Pizza Max</h2>
+  <p class="sr-only" id="introHelp">Open the box to see what's inside, or skip the intro.</p>
+  <button class="intro-box" id="introBox" type="button" aria-label="Open the pizza box"></button>
+  <div class="intro-words" aria-hidden="true">
+    <p class="intro-hint"><svg viewBox="0 0 32 32"><path d="M16 29 Q7 18 16 4 M16 4 l-6 5 M16 4 l5 6"/></svg>lift the lid!</p>
+    <p class="intro-tag">Hot from the stone oven. <span>Straight to you.</span></p>
+  </div>
+  <button class="intro-skip" id="introSkip" type="button">Skip intro</button>
+</div>
+
+<a class="skip" href="#menu">Skip to the menu</a>
+
+<!-- ===== TOP BAR ===== -->
+<aside class="topbar" aria-label="Shop status">
+  <div class="wrap topbar-in">
+    <span class="addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>Wollankstr. 20, 12345 Berlin</span>
+    <span class="open-status" id="openStatus" role="status"><i aria-hidden="true"></i><span>Opening hours</span></span>
+    <span class="topbar-links"><a class="topbar-phone" href="tel:+493012345678">030 123 456 78</a><a class="topbar-call" href="tel:+493012345678">Call</a><a class="topbar-kontakt" href="#kontakt">Contact</a></span>
+  </div>
+</aside>
+
+<!-- ===== HEADER ===== -->
+<header class="site-header">
+  <div class="wrap header-in">
+    <a class="logo" href="#top" aria-label="Pizza Max, home">
+      <span class="logo-pizza">Pizza</span>
+      <span class="logo-max">MAX</span>
+      <svg class="logo-swoosh" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 10 Q60 -2 118 6" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"/><path d="M8 13 Q62 3 116 10" fill="none" stroke="#4caf50" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="logo-tag">...tasty in the box!</span>
+    </a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="mainnav"><span></span><span></span><span></span><b class="sr-only">Open menu</b></button>
+    <nav id="mainnav" aria-label="Main">
+      <a href="#aktion" data-spy="aktion">Deals</a>
+      <a href="#menu" data-cat="pizza" data-spy="menu">Pizza</a>
+      <a href="#menu" data-cat="burger">Burgers</a>
+      <a href="#menu" data-cat="pasta">Pasta</a>
+      <a href="#menu" data-cat="salate">Salads</a>
+      <a href="#menu" data-cat="kids">Kids</a>
+      <a href="#menu" data-cat="desserts">Desserts</a>
+      <a href="#menu" data-cat="getraenke">Drinks</a>
+      <a class="nav-call" href="tel:+493012345678">Call 030 123 456 78</a>
+    </nav>
+  </div>
+</header>
+<div class="nav-scrim" id="navScrim" hidden></div>
+
+<main id="top" class="wood">
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="props" aria-hidden="true">
+      <img class="prop prop-basil" src="assets/props/basil.webp" alt="" width="254" height="420">
+      <img class="prop prop-tomato" src="assets/props/tomato.webp" alt="" width="420" height="415">
+      <img class="prop prop-chili" src="assets/props/chili.webp" alt="" width="420" height="130">
+      <img class="prop prop-sauce" src="assets/props/sauce.webp" alt="" width="420" height="394">
+      <img class="prop prop-olives" src="assets/props/olives.webp" alt="" width="420" height="312">
+    </div>
+
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1 id="hero-title" class="hero-title"><span class="ht-line">Hot from the</span> <span class="ht-line ht-red">stone oven.</span></h1>
+        <p class="hero-lead">Dough rested for 24 hours, tomato sauce from our own pot, 90 seconds at 400&nbsp;°C. From Pankow, straight to your door.</p>
+        <div class="hero-cta">
+          <a class="btn btn-red btn-lg" href="#menu">Order now</a>
+          <a class="btn btn-ghost btn-lg" href="#aktion">See the deals</a>
+        </div>
+        <ul class="trust" aria-label="Good to know">
+          <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h12l-1 9H5zM7 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Pickup ready in about 20 min</li>
+          <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v4.5l3 1.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Delivered in about 30 min</li>
+          <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 6h10v8H2zM12 9h3l3 3v2h-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="6" cy="15" r="1.6" fill="currentColor"/><circle cx="15" cy="15" r="1.6" fill="currentColor"/></svg>Delivery from €15, always free</li>
+        </ul>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-pizza" id="pizza3d" role="img" aria-label="3D pizza on a wooden board. Drag to spin it, or use the Pull a slice button."></div>
+        <button class="hand-note" id="pullSlice" type="button">pull a slice!<svg viewBox="0 0 80 40" aria-hidden="true"><path d="M4 6 Q40 4 66 30 M66 30 l-12 -2 M66 30 l-2 -12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
+        <p class="hero-pick">On the board: <b>Veggie Garden</b> <button type="button" class="mini-btn" id="heroAdd"><span class="add-label">Add it</span> · Maxi <span class="num">€13.20</span></button></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DEALS ===== -->
+  <section class="aktion" id="aktion" aria-labelledby="aktion-title">
+    <div class="wrap">
+      <h2 id="aktion-title" class="section-title">Deals</h2>
+      <p class="section-sub">More pizza, less to pay.</p>
+      <div class="deals" id="strip"></div>
+    </div>
+  </section>
+
+  <!-- ===== MENU ===== -->
+  <section class="menu" id="menu" aria-labelledby="menu-title">
+    <div class="wrap">
+      <h2 id="menu-title" class="section-title">Our menu</h2>
+      <p class="section-sub">Every pizza is made to order. Pick a size, add the cheese-stuffed crust if you like, done.</p>
+
+      <div class="menu-controls">
+      <div class="mc-group"><span class="mc-label" aria-hidden="true">Show as</span>
+      <div class="menu-switch" role="tablist" aria-label="Menu style">
+        <button role="tab" aria-selected="true" aria-controls="view-panels" id="tab-panels" data-view="panels">Cards</button>
+        <button role="tab" aria-selected="false" aria-controls="view-wheel" id="tab-wheel" data-view="wheel" tabindex="-1">Pizza wheel</button>
+        <button role="tab" aria-selected="false" aria-controls="view-board" id="tab-board" data-view="board" tabindex="-1">Full list</button>
+        <button role="tab" aria-selected="false" aria-controls="view-boxes" id="tab-boxes" data-view="boxes" tabindex="-1">Boxes</button>
+      </div>
+      </div>
+      <div class="mc-group"><span class="mc-label" aria-hidden="true">Filter</span>
+      <div class="filter" id="filter" role="group" aria-label="Filter the menu">
+        <button class="is-on" data-filter="all" aria-pressed="true">All</button>
+        <button data-filter="veg" aria-pressed="false">Vegetarian</button>
+        <button data-filter="hot" aria-pressed="false">Spicy</button>
+        <button data-filter="meat" aria-pressed="false">Meat &amp; fish</button>
+      </div>
+      </div>
+      </div>
+
+      <div class="menu-view" id="view-panels" role="tabpanel" aria-labelledby="tab-panels">
+        <div class="cards" id="panels"></div>
+      </div>
+
+      <div class="menu-view" id="view-wheel" role="tabpanel" aria-labelledby="tab-wheel" hidden>
+        <div class="wheel-wrap">
+          <div class="wheel-col">
+            <div class="wheel-box">
+              <svg class="wheel" id="wheel" viewBox="0 0 220 220" role="group" aria-label="Pizza wheel. Each slice is a different pizza."></svg>
+              <p class="wheel-name" id="wheelName" aria-hidden="true"></p>
+            </div>
+            <button type="button" class="btn btn-ghost wheel-spin" id="wheelSpin"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11 3.4M13.5 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Spin the wheel</button>
+            <ol class="wheel-legend" id="wheelLegend" aria-hidden="true"></ol>
+          </div>
+          <div class="wheel-detail" id="wheelDetail"></div>
+          <p class="sr-only" id="wheelLive" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="menu-view" id="view-board" role="tabpanel" aria-labelledby="tab-board" hidden>
+        <div class="board" id="board"></div>
+      </div>
+
+      <div class="menu-view" id="view-boxes" role="tabpanel" aria-labelledby="tab-boxes" hidden>
+        <div class="boxes" id="boxes"></div>
+      </div>
+      <p class="menu-note">Allergens are listed under every pizza. For other dishes, just ask us when you order. <a href="#allergene">Allergen key</a></p>
+    </div>
+  </section>
+
+  <!-- ===== OFEN BAND: order journey with its proof numbers ===== -->
+  <section class="ofen" aria-labelledby="ofen-title">
+    <div class="wrap">
+      <h2 id="ofen-title" class="section-title section-title-light">From our oven to you</h2>
+      <p class="section-sub section-sub-light">What goes into every pizza, and how fast it reaches you.</p>
+      <ol class="journey-track">
+        <li class="j-step">
+          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="24" r="8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="3 4"/><circle cx="20" cy="21" r="2" fill="currentColor"/><circle cx="28" cy="26" r="2" fill="currentColor"/></svg></span>
+          <b class="j-num">24 h</b>
+          <h3>Dough</h3><p>Made the day before, stretched by hand to order.</p>
+        </li>
+        <li class="j-step">
+          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 22h28v12a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M6 22h36" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M19 16c0-3 3-3 3-6M27 16c0-3 3-3 3-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          <b class="j-num">Daily</b>
+          <h3>Sauce</h3><p>Tomatoes simmered in our own pot every morning.</p>
+        </li>
+        <li class="j-step">
+          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M8 36V22a16 16 0 0 1 32 0v14Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 36c0-5 3-6 3-10 3 2 6 5 6 10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M5 36h38" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          <b class="j-num">400 °C</b>
+          <h3>Stone oven</h3><p>90 seconds, until the crust blisters.</p>
+        </li>
+        <li class="j-step">
+          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M6 20h36v18H6Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M6 20l4-8h28l4 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 29h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          <b class="j-num">30 min</b>
+          <h3>In the box</h3><p>Hot at your door anywhere in Pankow.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <section class="contact" id="kontakt" aria-labelledby="contact-title">
+    <div class="wrap contact-in">
+      <div>
+        <h2 id="contact-title" class="section-title section-title-left">Give us a call</h2>
+        <p class="contact-phone"><a href="tel:+493012345678">030 123 456 78</a></p>
+        <address>Wollankstr. 20, 12345 Berlin</address>
+        <form class="zip" id="zipForm" novalidate>
+          <label for="zip">Do we deliver to you?</label>
+          <div class="zip-row">
+            <input id="zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="Postcode, e.g. 13187" aria-describedby="zipMsg">
+            <button class="btn btn-red" type="submit">Check</button>
+          </div>
+          <div class="zip-msg" id="zipMsg" aria-live="polite"></div>
+        </form>
+      </div>
+      <dl class="hours" aria-label="Opening hours">
+        <div><dt>Mon – Thu</dt><dd>11:00 – 23:00</dd></div>
+        <div><dt>Fri – Sat</dt><dd>11:00 – 01:00</dd></div>
+        <div><dt>Sunday</dt><dd>12:00 – 23:00</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===== ALLERGENS ===== -->
+  <section class="allergens" id="allergene" aria-labelledby="allergen-title">
+    <div class="wrap">
+      <h2 id="allergen-title" class="small-title">Allergen and additive key</h2>
+      <dl class="alg-key">
+        <div><dt>A</dt><dd>gluten</dd></div><div><dt>A1</dt><dd>wheat</dd></div><div><dt>C</dt><dd>egg</dd></div>
+        <div><dt>D</dt><dd>fish</dd></div><div><dt>G</dt><dd>milk</dd></div><div><dt>H</dt><dd>tree nuts</dd></div>
+        <div><dt>H4</dt><dd>cashew</dd></div><div><dt>2</dt><dd>contains preservative</dd></div><div><dt>3</dt><dd>contains antioxidant</dd></div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <a class="logo logo-foot" href="#top" aria-label="Pizza Max, back to top">
+        <span class="logo-pizza">Pizza</span>
+        <span class="logo-max">MAX</span>
+        <svg class="logo-swoosh" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 10 Q60 -2 118 6" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"/><path d="M8 13 Q62 3 116 10" fill="none" stroke="#4caf50" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="logo-tag">...tasty in the box!</span>
+      </a>
+      <p class="open-foot" id="openFoot"></p>
+    </div>
+    <nav aria-label="Menu">
+      <h2>Menu</h2>
+      <a href="#menu" data-cat="pizza">Pizza</a><a href="#menu" data-cat="burger">Burgers</a><a href="#menu" data-cat="pasta">Pasta</a><a href="#menu" data-cat="salate">Salads</a><a href="#menu" data-cat="kids">Kids</a><a href="#menu" data-cat="desserts">Desserts</a><a href="#menu" data-cat="getraenke">Drinks</a>
+    </nav>
+    <nav aria-label="Service">
+      <h2>Service</h2>
+      <a href="#aktion">Deals</a><a href="#kontakt">Check delivery</a><a href="#allergene">Allergens</a>
+    </nav>
+    <div>
+      <h2>Contact</h2>
+      <p><a href="tel:+493012345678">030 123 456 78</a><br>Wollankstr. 20<br>12345 Berlin</p>
+    </div>
+  </div>
+  <div class="wrap footer-base">
+    <p>© 2026 Pizza Max Berlin</p>
+    <p class="legal"><a href="impressum.html">Legal notice (Impressum)</a><a href="datenschutz.html">Privacy policy</a><a href="#top">Back to top</a></p>
+  </div>
+</footer>
+
+<!-- ===== BASKET ===== -->
+<button class="cart-btn" id="cartBtn" aria-controls="cart" aria-expanded="false">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18l-2 13H5L3 7Zm5 0V5a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+  <span class="cart-count" id="cartCount">0</span>
+  <span class="sr-only">Open basket</span>
+</button>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="cart" id="cart" role="dialog" aria-modal="true" aria-labelledby="cartTitle" hidden>
+  <div class="cart-head"><h2 id="cartTitle" tabindex="-1">Your basket</h2><button class="cart-close" id="cartClose" aria-label="Close basket"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
+  <div class="cart-main" id="cartMain">
+    <ul class="cart-list" id="cartList"></ul>
+    <div class="cart-foot">
+      <div class="seg mode" role="radiogroup" aria-label="Delivery or pickup">
+        <button role="radio" aria-checked="true" data-mode="delivery">Delivery</button>
+        <button role="radio" aria-checked="false" data-mode="pickup" tabindex="-1">Pickup</button>
+      </div>
+      <div class="cart-zip deliv-only">
+        <label for="cartZip">Your postcode</label>
+        <input id="cartZip" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 13187" aria-describedby="cartZipMsg">
+        <p class="cart-zip-msg" id="cartZipMsg" aria-live="polite"></p>
+      </div>
+      <div class="cart-min" id="cartMin" aria-live="polite"></div>
+      <p class="cart-total">Total <b id="cartTotal" class="num">€0.00</b></p>
+      <button class="btn btn-red btn-block" id="checkout">Continue</button>
+    </div>
+  </div>
+  <form class="cart-form" id="cartForm" hidden novalidate>
+    <button type="button" class="link-back" id="formBack">← Back to basket</button>
+    <details class="form-sum"><summary id="formSumTitle">Your order</summary><ul class="done-list" id="formList"></ul></details>
+    <div class="field"><label for="fName">Name</label><input id="fName" autocomplete="name" required aria-describedby="fNameErr"><p class="err" id="fNameErr"></p></div>
+    <div class="field"><label for="fPhone">Phone</label><input id="fPhone" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="fPhoneErr"><p class="err" id="fPhoneErr"></p></div>
+    <div class="field deliv-only"><label for="fStreet">Street and number</label><input id="fStreet" autocomplete="street-address" required aria-describedby="fStreetErr"><p class="err" id="fStreetErr"></p></div>
+    <p class="field-note deliv-only" id="fZipNote"></p>
+    <div class="field"><label for="fWhen">When</label><select id="fWhen"></select></div>
+    <div class="field"><label for="fNote">Note <span class="opt">(optional)</span></label><input id="fNote" autocomplete="off" placeholder="Doorbell, floor, anything we should know"></div>
+    <p class="field-label" id="payLabel">Payment</p>
+    <div class="seg pay" role="radiogroup" aria-labelledby="payLabel">
+      <button type="button" role="radio" aria-checked="true" data-pay="cash">Cash</button>
+      <button type="button" role="radio" aria-checked="false" data-pay="card" id="payCard" tabindex="-1">Card at the door</button>
+    </div>
+    <div class="form-foot">
+      <p class="cart-total">Total <b id="formTotal" class="num">€0.00</b></p>
+      <button type="submit" class="btn btn-red btn-block" id="placeOrder">Place order</button>
+    </div>
+  </form>
+  <div class="cart-done" id="cartDone" hidden>
+    <div class="done-box" aria-hidden="true">
+      <span class="done-base"></span>
+      <span class="done-lid"><b>Pizza <i>MAX</i></b></span>
+    </div>
+    <p class="done-stamp" aria-hidden="true">Thanks!</p>
+    <p class="done-eta" id="doneEta"></p>
+    <p class="done-to" id="doneTo"></p>
+    <ol class="done-steps" aria-label="Order progress">
+      <li class="is-done">Received</li><li class="is-now" id="doneNow">In the oven</li><li>In the box</li><li id="doneLast">On its way</li>
+    </ol>
+    <ul class="done-list" id="doneList"></ul>
+    <p class="done-note">Demo: no real order was sent.</p>
+    <button class="btn btn-ghost btn-block" id="doneClose">Keep browsing</button>
+  </div>
+</aside>
+<button class="order-bar" id="orderBar" hidden aria-controls="cart"><span class="ob-count" id="obCount">1</span><span class="ob-label">View basket</span><span class="ob-total num" id="obTotal">€0.00</span></button>
+
+<p class="sr-only" id="srLive" aria-live="polite"></p>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button type="button" id="toastAction" hidden></button></div>
+
+<script type="module" src="js/intro.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
