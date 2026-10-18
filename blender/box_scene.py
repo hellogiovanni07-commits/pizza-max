@@ -150,29 +150,32 @@ def place(objs, loc, rot_z):
 
 
 def scene(name, pizza, n):
-    reset(1600, 1600 if n < 3 else 1700)
+    """n boxes stacked; the top one open on the pizza, or all closed (pizza None) with the printed lid on top"""
+    closed = pizza is None
+    reset(1600, 1300 if closed else 1600 if n < 3 else 1700)
     lid = img_mat('lid', os.path.join(ROOT, 'brand', 'export', 'box-lid.png'))
     side = img_mat('side', os.path.join(ROOT, 'brand', 'export', 'box-side.png'))
     kraft = img_mat('kraft', os.path.join(ROOT, 'assets', 'tex', 'kraft.webp'), repeat=2)
-    pz = img_mat('pizza', os.path.join(ROOT, 'assets', 'pizza', f'{pizza}-top.webp'), rough=.5)
+    pz = None if closed else img_mat('pizza', os.path.join(ROOT, 'assets', 'pizza', f'{pizza}-top.webp'), rough=.5)
     mats = [lid, side, kraft]
     turns = [.06, -.05, .03]
     shift = [(0, 0), (.06, -.04), (-.05, .05)]
-    for k in range(n - 1):          # closed boxes underneath
+    for k in range(n if closed else n - 1):          # closed boxes underneath (all of them, closed)
         ob = slab(f'box{k}', mats)
         before = set(bpy.data.objects)
         place([ob], (shift[k][0], shift[k][1], k * H / U), turns[k])
-    before = set(bpy.data.objects)
-    open_box('top', mats, pz)
-    new = [o for o in bpy.data.objects if o not in before and o.type == 'MESH']
-    place(new, (0, 0, (n - 1) * H / U), turns[(n - 1) % 3] * .5)
+    if not closed:
+        before = set(bpy.data.objects)
+        open_box('top', mats, pz)
+        new = [o for o in bpy.data.objects if o not in before and o.type == 'MESH']
+        place(new, (0, 0, (n - 1) * H / U), turns[(n - 1) % 3] * .5)
     lights()
     # three-quarter view from the front, the open box towards us
     h = n * H / U
     # framed loose so the open lid never touches the frame; blender/box_finish.py trims to the box and its shadow
-    tgt = Vector((.05, .55, h * .5 + .95))
+    tgt = Vector((0, .1, h * .5)) if closed else Vector((.05, .55, h * .5 + .95))
     cam = bpy.data.cameras.new('cam'); cam.lens = 62
-    co = link(bpy.data.objects.new('cam', cam)); co.location = tgt + Vector((-3.6, -8.4, 5.6)) * (1.3 + .07 * (n - 1))
+    co = link(bpy.data.objects.new('cam', cam)); co.location = tgt + Vector((-3.6, -8.4, 5.6)) * (1.15 if closed else 1.3 + .07 * (n - 1))
     tt = link(bpy.data.objects.new('t', None)); tt.location = tgt
     c = co.constraints.new('TRACK_TO'); c.target = tt; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'
     bpy.context.scene.camera = co
@@ -181,7 +184,7 @@ def scene(name, pizza, n):
     print('RENDERED', name)
 
 
-SCENES = {'stack-1': ('salami', 1), 'stack-2': ('marg', 2), 'stack-3': ('supreme', 3)}
+SCENES = {'stack-1': ('salami', 1), 'stack-2': ('marg', 2), 'stack-3': ('supreme', 3), 'stack-2-closed': (None, 2)}
 if __name__ == '__main__':
     ids = [i for i in args.only.split(',') if i] or list(SCENES)
     for i in ids:

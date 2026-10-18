@@ -102,8 +102,9 @@ button { font: inherit; color: inherit; }
 .spot { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); width: calc(var(--sw) * 1%); z-index: 2; }
 .spot .obj { width: 100%; }
 .prop { position: absolute; z-index: 1; height: auto; pointer-events: none; filter: drop-shadow(0 10px 10px rgba(40, 25, 10, .22)); }
-.prop-basil { width: 9%; left: 31%; top: 30%; transform: rotate(28deg); }
-.prop-tomato { width: 5.5%; left: 61%; top: 84%; }
+.prop-basil, .prop-tomato { filter: none; }   /* these two renders carry their own shadow on the table */
+.prop-basil { width: 12%; left: 30%; top: 28%; transform: rotate(28deg); }
+.prop-tomato { width: 8.4%; left: 60%; top: 82%; }
 .prop-olives { width: 8%; left: 90%; top: 66%; transform: rotate(-12deg); }
 /* a strip of masking tape with a pencil note, beside the box */
 .note {

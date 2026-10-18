@@ -235,11 +235,11 @@ a:hover .i-arrow, button:hover .i-arrow { transform: translateX(3px); }
   position: relative; width: min(1320px, 100% - 64px); margin-inline: auto; display: grid;
   grid-template-columns: minmax(0, .78fr) minmax(0, 1.25fr) minmax(340px, .75fr); grid-template-areas: "copy pizza ticket"; align-items: center;
 }
-.hero-copy { grid-area: copy; position: relative; z-index: 3; align-self: start; padding-top: 44px; }
+.hero-copy { grid-area: copy; position: relative; z-index: 3; align-self: center; margin-bottom: clamp(72px, 7.5vw, 120px); }   /* a little above centre: the headline clears the pizza's widest part, the air above and below reads even */
 /* the headline runs on over the board's empty corner; it lets drags through to the pizza */
 .hero-title { width: 122%; margin: 0; font-weight: 800; font-size: clamp(2.8rem, 5.1vw, 4.75rem); line-height: .98; letter-spacing: -.035em; pointer-events: none; }
 .hero-title em { font-style: normal; color: var(--green-dk); }
-.hero-lead { margin: 22px 0 0; font-size: var(--fs-lg); color: var(--text); max-width: 30ch; }
+.hero-lead { margin: 22px 0 0; font-size: var(--fs-lg); color: var(--text); max-width: min(30ch, 100% - 6rem); text-wrap: pretty; }   /* the headline leans into the board, the lead stays clear of it */
 .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 .hero-visual { grid-area: pizza; position: relative; margin-left: -56px; }   /* the board slides under the end of the headline */
 /* today's oven, printed on the shop's thermal order ticket (the brand kit's ticket): torn top and bottom */
@@ -289,6 +289,9 @@ a:hover .i-arrow, button:hover .i-arrow { transform: translateX(3px); }
 }
 @media (hover: hover) { .hand-note:hover { transform: rotate(3deg) scale(1.05); } }
 .hand-note svg { width: 70px; margin-top: 16px; scale: -1 1; rotate: -28deg; }
+/* two closed boxes wait on the counter behind today's ticket, which lies across their front edge: the shop's
+   printed lid in the shop's own render. Decoration, never a click; it leaves with the three-column layout */
+.today-boxes { position: absolute; z-index: -2; left: 6%; bottom: calc(100% - 50px); width: clamp(250px, 24vw, 356px); height: auto; rotate: .7deg; pointer-events: none; user-select: none; }
 
 /* ---------- deals ---------- */
 .aktion { padding: 72px 0 80px; background: var(--surface); border-top: 1px solid var(--line); }
@@ -706,10 +709,11 @@ a:hover .i-arrow, button:hover .i-arrow { transform: translateX(3px); }
 }
 /* under 1260px the headline runs across the top, then the pizza with today's ticket lying beside it */
 @media (max-width: 1259px) {
+  .today-boxes { display: none; }
   .hero-stage { width: min(1180px, 100% - 40px); grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); grid-template-areas: "copy copy" "pizza ticket"; row-gap: 4px; }
-  .hero-copy { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr); grid-template-areas: "title lead" "title cta"; align-items: end; column-gap: 40px; padding-top: 0; }
+  .hero-copy { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr); grid-template-areas: "title lead" "title cta"; align-items: end; column-gap: 40px; margin-bottom: 0; }
   .hero-title { grid-area: title; width: auto; }
-  .hero-lead { grid-area: lead; margin: 0; }
+  .hero-lead { grid-area: lead; margin: 0; max-width: 30ch; }
   .hero-cta { grid-area: cta; margin: 16px 0 4px; }
   .hero-visual { justify-self: center; width: 100%; max-width: 580px; margin-left: 0; }
   .today { align-self: center; margin: 0 0 0 -28px; }

@@ -649,12 +649,16 @@ def textures():
         bpy.data.objects.remove(ob)
 
 def props():
-    """loose ingredients for the hero, rendered with the pizza light rig"""
+    """loose ingredients for the hero, rendered with the pizza light rig: each lies on the table and casts its shadow
+    there (blender/box_finish.py props cleans the catcher's faint wash and trims them)"""
     reset(); M = mats()
-    build_lights_and_floor()
-    bpy.data.objects['floor'].hide_render = True
+    floor = build_lights_and_floor()
+    for ln in ('key', 'rim'):
+        bpy.data.lights[ln].shape = 'DISK'          # round highlights on the glossy skins, never a square window
     def shoot(name, ob_list, ortho):
-        cam = camera('cam_' + name, (0, -3.2, 9), (0, 0, 0), ortho=ortho)
+        bpy.context.view_layer.update()
+        floor.location.z = min((o.matrix_world @ Vector(c)).z for o in ob_list for c in o.bound_box) + .002
+        cam = camera('cam_' + name, (0, -3.2, 9), (0, 0, 0), ortho=ortho * 1.6)   # room for the cast shadow
         render(os.path.join(OUT, 'props', f'{name}.png'), cam)
         for ob in ob_list: bpy.data.objects.remove(ob)
         for o in [o for o in bpy.data.objects if o.name.startswith('cam_')]: bpy.data.objects.remove(o)
@@ -701,7 +705,10 @@ def props():
     bmesh.ops.spin(bm, geom=bm.verts[:] + bm.edges[:], cent=(0, 0, 0), axis=(0, 0, 1), angle=math.tau, steps=64, use_duplicate=False)
     bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=.0005)
     bowl = mesh_obj('bowl', bm, M['ceramic'])
-    sauce = cylinder('dip', .63, .04, .3, M['sauce'], segs=64)
+    dip = M['sauce'].copy()                          # in the pot the sauce lies flat and matt, not a glossy dome
+    pb = next(n for n in dip.node_tree.nodes if n.type == 'BSDF_PRINCIPLED')
+    pb.inputs['Roughness'].default_value = .62; pb.inputs['Coat Weight'].default_value = 0
+    sauce = cylinder('dip', .63, .04, .3, dip, segs=64)
     shoot('sauce', [bowl, sauce], 1.7)
 
     # olives
