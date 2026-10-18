@@ -202,15 +202,17 @@ a:hover .i-arrow, button:hover .i-arrow { transform: translateX(3px); }
   top: 50%; flex-direction: row; align-items: baseline; gap: 5px; width: auto; min-height: 44px; padding: 7px 0;
   background: none; box-shadow: none; translate: 0 -50%; animation: logo-line .35s var(--ease);
 }
-.site-header.is-scrolled .logo-pizza { margin: 0; font-size: 1.05rem; }
+.site-header.is-scrolled .logo-pizza { align-self: baseline; margin: 0; font-size: 1.05rem; }   /* one baseline with MAX */
 .site-header.is-scrolled .logo-max { font-size: 1.85rem; line-height: 1; }
 .site-header.is-scrolled .logo-swoosh, .site-header.is-scrolled .logo-tag { display: none; }
 @keyframes logo-badge { from { opacity: 0; transform: translateY(-8px); } }
 @keyframes logo-line { from { opacity: 0; transform: translateY(6px); } }
-.logo-pizza { font: italic 800 1.1rem var(--font-display); color: var(--green); align-self: flex-start; margin-left: 16px; }
-.logo-max { font: italic 800 2.7rem var(--font-display); color: var(--red); letter-spacing: -.03em; }
-.logo-swoosh { width: 110px; height: 12px; margin-top: 2px; }
-.logo-tag { font: 700 1.05rem/1 var(--font-hand); color: var(--red); align-self: flex-end; }
+/* set tight, as the brand kit draws it: "Pizza" sits on the shoulder of "MAX", the swoosh and the line close under it
+   (the font shorthand would reset line-height to normal and open a gap of a quarter line around each word) */
+.logo-pizza { font: italic 800 1.1rem/1 var(--font-display); color: var(--green); align-self: flex-start; margin: 0 0 -.06rem 1.4rem; }
+.logo-max { font: italic 800 2.7rem/.86 var(--font-display); color: var(--red); letter-spacing: -.03em; padding-right: .05em; }
+.logo-swoosh { width: 110px; height: 12px; margin-top: 3px; }
+.logo-tag { font: 700 1.05rem/1 var(--font-hand); color: var(--red); align-self: flex-end; margin-top: 3px; }
 
 #mainnav { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px clamp(14px, 1.9vw, 26px); margin-left: 190px; flex: 1; }
 #mainnav a {
@@ -724,9 +726,11 @@ a:hover .i-arrow, button:hover .i-arrow { transform: translateX(3px); }
   .open-status { margin-left: 0; margin-right: auto; }
   .nav-toggle { display: block; }
   .header-in { min-height: 60px; }
-  .logo { top: -8px; width: 132px; padding: 6px 10px 8px; }
+  .logo { top: -8px; width: 132px; padding: 7px 10px 8px; }
+  .logo-pizza { font-size: .92rem; margin-left: 1.15rem; }
   .logo-max { font-size: 2.2rem; }
-  .logo-swoosh { width: 90px; }
+  .logo-swoosh { width: 90px; height: 10px; }
+  .logo-tag { font-size: .95rem; }
   #mainnav {
     position: absolute; left: -20px; right: -20px; top: 100%; z-index: 39; max-width: 100vw; display: none; flex-direction: column; gap: 0;
     margin: 0; padding: 70px 24px 18px; background: var(--surface); box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
