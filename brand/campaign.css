@@ -1,0 +1,300 @@
+/* Pizza Max — the marketing pieces. Built from the website's own world: white-painted planks, kraft boxes,
+   the thermal order ticket, one handwritten note per piece, and the shop's renders (pizzas and box stacks).
+   Inside every .m, 1em is one unit (1 mm in print, 1 px on screens); var(--u) is that unit in pixels, used for
+   positions inside elements that change their own font size. Loaded after materials.css. */
+
+/* ---------------------------------------------------------------- shared parts */
+/* a headline: heavy, tight, ink, the place name in green (as on the website) */
+.hed { font: 800 calc(var(--hs, 12) * 1em)/.92 var(--f-display); letter-spacing: -.035em; color: var(--ink); }
+.hed em { font-style: normal; color: var(--green); }
+.lede { font: 400 calc(var(--ls, 3.4) * 1em)/1.45 var(--f-body); color: #2f2a24; }
+
+/* the thermal order ticket: torn top and bottom, dotted leaders, black print */
+.tix {
+  position: absolute; width: auto; height: auto; isolation: isolate; inset: auto;
+  padding: 1.05em 1.15em 1.3em; color: #161616; font: 500 calc(var(--ts, 3.4) * 1em)/1.35 var(--f-body);
+  transform: rotate(var(--rot, -1.2deg));
+  filter: drop-shadow(0 .32em .4em rgba(40, 25, 10, .24)) drop-shadow(0 .04em .06em rgba(40, 25, 10, .2));
+}
+.tix::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; --z: .62em;
+  background: url(../assets/tex/paper.webp) 0 0 / 24em #fcfbf8;
+  -webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--z) 51% repeat-x, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--z) 51% repeat-x;
+  mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--z) 51% repeat-x, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--z) 51% repeat-x;
+}
+.tix-h { display: flex; justify-content: space-between; gap: 1em; font: 800 .86em/1.2 var(--f-display); letter-spacing: .15em; text-transform: uppercase; }
+.tix-h span:last-child { font-weight: 600; letter-spacing: .06em; color: #555; }
+.tix-rule { height: 0; margin: .5em 0; border-top: .1em dashed rgba(22, 22, 22, .4); }
+.tix-row { display: grid; grid-template-columns: auto minmax(.8em, 1fr) auto; align-items: baseline; gap: .35em; padding: .16em 0; }
+.tix-row i { border-bottom: .1em dotted rgba(22, 22, 22, .5); transform: translateY(-.28em); }
+.tix-row b { font-weight: 700; text-align: right; }
+.tix-big { font: 800 2.7em/1 var(--f-display); letter-spacing: -.02em; }
+.tix-was { font-size: .86em; color: #555; }
+.tix-was s { text-decoration-thickness: .08em; }
+.tix .tag { position: absolute; right: -.4em; top: -.9em; font-size: 1.5em; }
+.tix .qr { position: static; display: block; width: 100%; height: auto; margin: .6em auto; padding: 0; background: none; fill: #161616; }
+
+/* a handwritten tag (the save amount), and a handwritten note with its pencil arrow */
+.tag { display: inline-block; width: auto; height: auto; padding: .02em .32em .1em; border: .06em solid; border-radius: .18em; background: rgba(252, 251, 248, .92); font: 700 1em/1 var(--f-hand); color: var(--tomato-dk); transform: rotate(var(--tr, 6deg)); white-space: nowrap; }
+.hand { position: absolute; width: auto; height: auto; font: 700 calc(var(--ns, 7) * 1em)/1 var(--f-hand); color: var(--tomato-dk); transform: rotate(var(--nr, -5deg)); white-space: nowrap; }
+.hand svg { position: absolute; width: 1.5em; height: 1.1em; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+
+/* the green order band at the foot of print pieces */
+.band { position: absolute; z-index: 3; left: 0; right: 0; top: auto; bottom: 0; width: auto; height: calc(var(--bh, 34) * var(--u)); display: flex; align-items: center; justify-content: space-between; gap: 6em; padding: 0 calc(var(--bp, 10) * var(--u)); background: radial-gradient(ellipse at 20% 0%, rgba(255, 255, 255, .07), transparent 60%), var(--pine); color: #fff; }
+.band-call { display: grid; gap: .2em; font: 600 calc(var(--bs, 3.6) * 1em)/1.2 var(--f-body); color: #c8e6c9; }
+.band-call b { font: 800 2.2em/1 var(--f-display); letter-spacing: -.015em; color: #fff; }
+.band-call span b { font: inherit; font-weight: 700; letter-spacing: 0; color: #fff; }
+.band .qr { position: static; flex: none; width: calc(var(--qs, 24) * var(--u)); height: calc(var(--qs, 24) * var(--u)); padding: calc(var(--qs, 24) * .06 * var(--u)); border-radius: calc(var(--qs, 24) * .05 * var(--u)); }
+
+/* renders: their own soft shadow is in the picture */
+.pic { position: absolute; height: auto; max-width: none; }
+.pic.shadow { filter: drop-shadow(0 calc(var(--sd, 3) * 1em) calc(var(--sd, 3) * 1.4em) rgba(40, 25, 10, .28)); }
+
+/* the three sizes to scale (real top views) */
+.ruler { display: flex; align-items: flex-end; gap: 1.3em; width: auto; height: auto; }
+.ruler li { display: grid; justify-items: center; gap: .1em; font-size: calc(var(--rs, 2.6) * 1em); line-height: 1.2; color: #3a3a3a; }
+.ruler img { width: calc(var(--d) * var(--rk, .5) * var(--u)); height: auto; margin-bottom: .3em; filter: drop-shadow(0 .2em .25em rgba(40, 25, 10, .25)); }
+.ruler b { font: 800 1.1em var(--f-display); color: var(--ink); }
+
+/* a menu board: name, leader, prices; ingredients and allergen codes under */
+.board { width: auto; height: auto; }
+.board li { display: grid; grid-template-columns: auto minmax(1em, 1fr) repeat(var(--cols, 3), var(--pw, 3.6em)); align-items: baseline; column-gap: .4em; padding: .55em 0 .5em; border-top: .09em solid rgba(31, 31, 31, .12); font-size: calc(var(--bf, 3) * 1em); }
+.board li:first-child { border-top: 0; }
+.board .n { font: 800 1em var(--f-display); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.board .n .ic { width: 1em; height: 1em; margin-left: .25em; }
+.board i { border-bottom: .1em dotted rgba(31, 31, 31, .4); transform: translateY(-.25em); }
+.board .p { font: 700 1em var(--f-body); text-align: right; font-variant-numeric: tabular-nums; }
+.board .d { grid-column: 1 / -1; font-size: .82em; line-height: 1.35; color: #4a4a4a; }
+.board .d small { font-size: .9em; color: #6a6a6a; }
+.board-head { display: grid; grid-template-columns: 1fr repeat(var(--cols, 3), var(--pw, 3.6em)); column-gap: .4em; align-items: baseline; font: 600 calc(var(--bf, 3) * 1em) var(--f-body); color: #555; text-align: right; }
+.board-head span { font-size: .78em; }
+.board-head span:first-child { text-align: left; }
+.board-h { font: 800 calc(var(--bh2, 6) * 1em)/1 var(--f-display); letter-spacing: -.02em; color: var(--ink); }
+.board-h small { display: block; margin-top: .35em; font: 600 .36em/1.3 var(--f-body); letter-spacing: 0; color: #555; }
+
+/* a slip of white card on the planks (menu panels, the voucher stub) */
+.card-on { position: absolute; width: auto; height: auto; background: url(../assets/tex/paper.webp) 0 0 / 60em #fdfcf9; box-shadow: 0 .2em .3em rgba(40, 25, 10, .12), 0 1.4em 2.6em -1em rgba(40, 25, 10, .28); }
+
+/* ---------------------------------------------------------------- business cards */
+.bcx { --plank: 13; }
+.bcx .tab { --tx: 6; --tp: 2.6; }
+.bcx-l { position: absolute; left: calc(6 * var(--u)); top: auto; bottom: calc(6 * var(--u)); width: auto; height: auto; font: 800 2.2em/1.3 var(--f-display); letter-spacing: .2em; color: #4a4a4a; }
+.bcx-pz { right: -20em; bottom: -22em; width: 54em; transform: rotate(-12deg); }
+
+/* ---------------------------------------------------------------- A5 flyer, front */
+.ff { --plank: 22; }
+.ff .tab { --tx: 10; --tp: 5; }
+.ff-h { position: absolute; left: calc(10 * var(--u)); top: calc(48 * var(--u)); width: calc(104 * var(--u)); height: auto; --hs: 13.6; }
+.ff-lede { position: absolute; left: calc(10 * var(--u)); top: calc(92 * var(--u)); width: calc(70 * var(--u)); height: auto; --ls: 3.5; }
+.ff .tix { left: calc(10 * var(--u)); top: calc(118 * var(--u)); width: calc(64 * var(--u)); --ts: 3.05; --rot: -1.6deg; }
+.ff-box { right: -14em; bottom: 30em; width: 84em; }
+.ff .hand { left: calc(86 * var(--u)); top: calc(98 * var(--u)); --ns: 5.6; --nr: -6deg; }
+.ff .hand svg { left: 1.6em; top: 1.05em; transform: rotate(18deg); }
+.ff .band { --bh: 31; --bp: 10; --qs: 22; }
+
+/* ---------------------------------------------------------------- A5 flyer, back */
+.fb { --plank: 22; }
+.fb-h { position: absolute; left: calc(10 * var(--u)); top: calc(10 * var(--u)); width: calc(128 * var(--u)); height: auto; --bh2: 9; }
+.fb-deals { position: absolute; left: calc(7 * var(--u)); right: calc(7 * var(--u)); top: calc(32 * var(--u)); width: auto; height: calc(80 * var(--u)); display: grid; grid-template-columns: repeat(3, 1fr); gap: 3em; }
+.fb-deal { position: relative; }
+.fb-deal .pic { left: 50%; top: 0; width: auto; height: 38em; transform: translateX(-50%); }
+.fb-deal .tix { left: calc(1 * var(--u)); right: calc(1 * var(--u)); top: calc(36 * var(--u)); --ts: 2.55; --rot: -1deg; }
+.fb-deal:nth-child(2) .tix { --rot: 1.2deg; }
+.fb-deal:nth-child(3) .tix { --rot: -.6deg; }
+.fb-menu { left: calc(9 * var(--u)); right: calc(9 * var(--u)); top: calc(104 * var(--u)); padding: 4.5em 6em 3.5em; --bf: 2.75; --pw: 3.4em; }
+.fb-menu .board li { padding: .42em 0 .38em; }
+.fb-menu .board-head { margin-bottom: .6em; }
+.fb-foot { position: absolute; left: 0; right: 0; top: auto; bottom: 0; width: auto; height: calc(11 * var(--u)); display: flex; align-items: center; justify-content: space-between; padding: 0 calc(10 * var(--u)); background: var(--pine); color: #e3f1e4; font: 600 2.55em var(--f-body); }
+.fb-foot b { color: #fff; font-family: var(--f-display); font-weight: 800; }
+
+/* ---------------------------------------------------------------- door hanger */
+.dhx { --plank: 20; }
+.dhx .dh-hole { left: calc(33 * var(--u)); top: calc(13 * var(--u)); background: #e9e5dc; }
+.dhx-h { position: absolute; left: calc(9 * var(--u)); top: calc(54 * var(--u)); width: calc(84 * var(--u)); height: auto; --hs: 15; }
+.dhx-lede { position: absolute; left: calc(9 * var(--u)); top: calc(74 * var(--u)); width: calc(80 * var(--u)); height: auto; --ls: 3.4; }
+.dhx-box { left: 18em; top: 88em; width: 64em; }
+.dhx .tix { left: calc(10 * var(--u)); right: calc(10 * var(--u)); top: calc(166 * var(--u)); --ts: 3.2; --rot: -1.4deg; }
+.dhx .band { --bh: 38; --bp: 8; --qs: 22; flex-direction: row; }
+.dhx .band-call { --bs: 3.1; }
+
+/* ---------------------------------------------------------------- takeaway menu, outside (flap | back | cover) */
+.mo3 { display: grid; grid-template-columns: 97fr 100fr 100fr; }
+.mo3 > section { position: relative; overflow: hidden; }
+.mo3 > section + section { box-shadow: inset .25em 0 0 rgba(40, 25, 10, .08); }
+.mo3-deals { padding: 10em 8em; }
+.mo3-deals .board-h { --bh2: 8; }
+.mo3-deal { position: relative; height: 52em; margin-top: 4em; }
+.mo3-deal .pic { left: -2em; top: -2em; width: auto; height: 46em; }
+.mo3-deal .tix { left: calc(36 * var(--u)); right: calc(-1 * var(--u)); top: calc(4 * var(--u)); --ts: 2.4; }
+.mo3-find { padding: 10em 9em; }
+.mo3-find .board-h { --bh2: 8; }
+.mo3-find .tix { left: calc(9 * var(--u)); right: calc(9 * var(--u)); top: calc(30 * var(--u)); --ts: 2.75; --rot: .8deg; }
+.mo3-zones { position: absolute; left: calc(9 * var(--u)); right: calc(9 * var(--u)); top: calc(86 * var(--u)); width: auto; height: auto; font-size: 2.6em; line-height: 1.3; color: #333; }
+.mo3-zones > b { display: block; margin-bottom: .5em; font: 800 1.2em var(--f-display); color: var(--ink); }
+.mo3-zones li { display: flex; justify-content: space-between; gap: 1em; padding: .38em 0; border-top: .08em solid rgba(31, 31, 31, .14); }
+.mo3-zones li span { font: 700 1em var(--f-display); letter-spacing: .02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.mo3-order { position: absolute; left: calc(9 * var(--u)); right: calc(9 * var(--u)); top: auto; bottom: calc(9 * var(--u)); width: auto; height: auto; display: flex; align-items: center; gap: 4em; }
+.mo3-order .qr { position: static; width: 26em; height: 26em; padding: 1.2em; border-radius: 1em; box-shadow: 0 .2em .5em rgba(40, 25, 10, .15); }
+.mo3-order p { font-size: 3em; line-height: 1.35; }
+.mo3-order b { display: block; font: 800 1.9em/1.1 var(--f-display); color: var(--ink); }
+.mo3-cover { --plank: 20; }
+.mo3-cover .tab { --tx: 9; --tp: 4.6; }
+.mo3-t { position: absolute; left: calc(9 * var(--u)); top: calc(62 * var(--u)); width: auto; height: auto; font: 800 21em/1 var(--f-display); letter-spacing: .08em; color: var(--ink); }
+.mo3-sub { position: absolute; left: calc(9 * var(--u)); top: calc(88 * var(--u)); width: calc(80 * var(--u)); height: auto; --hs: 7; }
+.mo3-cover .pic { right: -30em; bottom: -26em; width: 106em; }
+.mo3-cover .hand { left: calc(10 * var(--u)); top: calc(126 * var(--u)); --ns: 6; --nr: -4deg; }
+.mo3-cover .hand svg { left: 9.7em; top: .55em; transform: rotate(32deg); }
+
+/* ---------------------------------------------------------------- takeaway menu, inside */
+.mi3 { display: grid; grid-template-columns: 97fr 100fr 100fr; }
+.mi3 > section { position: relative; overflow: hidden; padding: 10em 8em; --bf: 2.8; --pw: 3em; }
+.mi3 > section + section { box-shadow: inset .25em 0 0 rgba(40, 25, 10, .08); }
+.mi3 .board-h { --bh2: 8; margin-bottom: calc(5 * var(--u)); }
+.mi3 .ruler { margin: 0 0 6em; --rk: .56; --rs: 2.5; }
+.mi3 .board .pz { grid-row: 1 / span 2; align-self: center; width: 4.6em; height: 4.6em; margin-right: .6em; }
+.mi3 .board .n { letter-spacing: .06em; }
+.mi3 .board li.has-pz { padding: .9em 0 .85em; }
+.mi3 .board li.has-pz { grid-template-columns: auto auto minmax(1em, 1fr) repeat(3, var(--pw)); }
+.mi3 .board li.has-pz .d { grid-column: 2 / -1; }
+.mi3-crust { position: absolute; left: calc(8 * var(--u)); right: calc(8 * var(--u)); bottom: calc(12 * var(--u)); display: flex; align-items: center; gap: .6em; font: 600 2.8em var(--f-body); }
+.mi3-crust .tag { --tr: -4deg; font-size: 1.5em; }
+.mi3-more { --cols: 1; --bf: 2.6; }
+.mi3-more .board li { padding: .34em 0 .3em; }
+.mi3-more .cat { margin-top: 3em; }
+.mi3-more .cat:first-of-type { margin-top: 0; }
+.mi3-more .cat h4 { margin: 0 0 .3em; font: 800 3.2em var(--f-display); color: var(--green); }
+.mi3-pz { right: -16em; bottom: -20em; width: 76em; }
+.mi3 .hand { left: calc(10 * var(--u)); bottom: calc(26 * var(--u)); top: auto; --ns: 5; --nr: -5deg; }
+.mi3 .hand svg { left: 7.4em; top: .7em; transform: rotate(10deg); }
+.mi3-alg { position: absolute; left: calc(8 * var(--u)); right: calc(8 * var(--u)); top: auto; bottom: calc(7 * var(--u)); width: auto; height: auto; font-size: 2.2em; line-height: 1.45; color: #555; }
+.mi3-alg b { color: var(--ink); }
+
+/* ---------------------------------------------------------------- A3 poster */
+.px { --plank: 44; }
+.px .tab { --tx: 20; --tp: 9; }
+.px-h { position: absolute; left: calc(20 * var(--u)); top: calc(96 * var(--u)); width: calc(250 * var(--u)); height: auto; --hs: 30; }
+.px-lede { position: absolute; left: calc(20 * var(--u)); top: calc(196 * var(--u)); width: calc(120 * var(--u)); height: auto; --ls: 6; }
+.px .tix { left: calc(20 * var(--u)); top: calc(246 * var(--u)); width: calc(118 * var(--u)); --ts: 5.4; --rot: -1.4deg; }
+.px-box { right: -24em; top: 158em; width: 160em; }
+.px .hand { left: calc(168 * var(--u)); top: calc(186 * var(--u)); --ns: 11; --nr: -7deg; }
+.px .hand svg { left: 5em; top: 1.05em; transform: rotate(28deg); }
+.px .band { --bh: 64; --bp: 20; --qs: 44; --bs: 6.4; }
+
+/* ---------------------------------------------------------------- counter card */
+.tc { --plank: 18; text-align: center; }
+.tc .tab { --tx: 31; --tp: 4.4; }
+.tc-h { position: absolute; left: calc(8 * var(--u)); right: calc(8 * var(--u)); top: calc(40 * var(--u)); width: auto; height: auto; --hs: 9.4; }
+.tc .tix { left: calc(25 * var(--u)); right: calc(25 * var(--u)); top: calc(62 * var(--u)); --ts: 2.6; --rot: 1.2deg; text-align: center; }
+.tc .tix .qr { width: calc(28 * var(--u)); height: calc(28 * var(--u)); }
+.tc-pz { left: 50%; bottom: -40em; width: 92em; transform: translateX(-50%); }
+.tc-call { position: absolute; left: 0; right: 0; top: calc(110 * var(--u)); width: auto; height: auto; font: 600 3.3em var(--f-body); color: #333; }
+.tc-call b { font-family: var(--f-display); font-weight: 800; color: var(--ink); }
+
+/* ---------------------------------------------------------------- gift voucher */
+.vx { display: grid; grid-template-columns: 148fr 62fr; }
+.vx-main { position: relative; overflow: hidden; --fib: 90; }
+.vx-main .lg { position: absolute; left: calc(10 * var(--u)); top: calc(9 * var(--u)); }
+.vx-h { position: absolute; left: calc(10 * var(--u)); top: calc(44 * var(--u)); width: auto; height: auto; font: 800 7.2em var(--f-display); letter-spacing: .22em; color: var(--pine); }
+.vx-lines { position: absolute; left: calc(10 * var(--u)); top: calc(58 * var(--u)); width: calc(84 * var(--u)); height: auto; display: grid; gap: 4.4em; }
+.vx-lines p { display: flex; align-items: baseline; gap: 1.6em; font: 600 3.8em var(--f-body); color: var(--kraft-ink, #2c1f0e); }
+.vx-lines i { flex: 1; min-height: 1.1em; border-bottom: .07em solid rgba(44, 31, 14, .55); }
+.vx-box { right: -16em; bottom: -8em; width: 70em; }
+.vx-stub { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 4.4em; padding: 8em 6em; background: url(../assets/tex/paper.webp) 0 0 / 60em #fcfbf8; border-left: .5em dashed #b9b1a2; }
+.vx-stub .lgl { align-self: flex-start; margin-bottom: 1em; }
+.vx-stub p { display: flex; gap: 1.4em; align-items: baseline; font: 600 3em var(--f-body); }
+.vx-stub i { flex: 1; border-bottom: .08em solid #999; }
+.vx-stub small { font-size: 2.2em; line-height: 1.4; color: #555; }
+
+/* ---------------------------------------------------------------- delivery bag, napkin */
+.bgx-body { background-color: var(--pine); background-image: url(../assets/tex/paper.webp); background-size: 40em; background-blend-mode: multiply; }
+.bgx-line { font: 800 13em var(--f-display); letter-spacing: .18em; color: #c8e6c9; }
+
+/* ---------------------------------------------------------------- pavement board: a real chalk panel */
+.abx .ab-write.chalk { padding: 50em 46em; background: radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, .05), transparent 70%), url(../assets/tex/chalk.webp) 0 0 / 360em #22302a; }
+.abx .ab-m1 { color: #ffd6cf; }
+.abx .ab-m2 { color: #f2efe7; }
+.abx .ab-m3 { color: #c8f0c4; }
+.abx .ab-m4 { color: #f2efe7; }
+
+/* ---------------------------------------------------------------- the menu screen */
+.tvx { --plank: 150; }
+.tvx .tab { --tx: 80; --tp: 22; }
+.tvx-h { position: absolute; left: calc(80 * var(--u)); top: calc(250 * var(--u)); width: auto; height: auto; --bh2: 84; }
+.tvx-list { position: absolute; left: calc(80 * var(--u)); top: calc(370 * var(--u)); width: 940em; height: auto; --bf: 29; --pw: 4.4em; }
+.tvx-list .board li { padding: .34em 0 .3em; }
+.tvx-list .board-head { margin-bottom: .2em; }
+.tvx-box { right: 50em; top: 110em; width: 560em; }
+.tvx .tix { left: auto; right: calc(370 * var(--u)); top: auto; bottom: calc(120 * var(--u)); width: calc(470 * var(--u)); --ts: 28; --rot: 2deg; }
+.tvx-foot { position: absolute; z-index: 2; left: 0; right: 0; top: auto; bottom: 0; width: auto; height: calc(84 * var(--u)); display: flex; align-items: center; justify-content: space-between; padding: 0 calc(80 * var(--u)); background: var(--pine); color: #e3f1e4; font: 600 30em var(--f-body); }
+.tvx-foot b { font: 800 1.3em var(--f-display); color: #fff; }
+
+/* ---------------------------------------------------------------- car door magnet */
+.mgx { display: block; padding: 0; border-radius: 26em; --plank: 40; }
+.mgx .lg { position: absolute; left: calc(40 * var(--u)); top: calc(34 * var(--u)); }
+.mgx-what { position: absolute; left: calc(42 * var(--u)); top: calc(160 * var(--u)); width: auto; height: auto; font: 600 20em var(--f-body); color: #333; }
+.mgx-call { position: absolute; left: calc(40 * var(--u)); top: calc(194 * var(--u)); width: auto; height: auto; white-space: nowrap; font: 800 50em/1 var(--f-display); letter-spacing: -.015em; color: var(--tomato); }
+.mgx-web { position: absolute; left: calc(42 * var(--u)); top: calc(264 * var(--u)); width: auto; height: auto; font: 700 22em var(--f-display); letter-spacing: .06em; color: var(--pine); }
+.mgx-box { right: -14em; top: 34em; width: 176em; }
+
+/* ---------------------------------------------------------------- social and screens */
+.ipx { --plank: 150; }
+.ipx .tab { --tx: 64; --tp: 20; }
+.ipx-pz { right: -220em; bottom: -170em; width: 920em; }
+.ipx .tix { left: calc(64 * var(--u)); top: calc(400 * var(--u)); width: calc(460 * var(--u)); --ts: 30; --rot: -2.4deg; }
+.ipx .hand { left: calc(76 * var(--u)); top: calc(760 * var(--u)); --ns: 42; --nr: -4deg; line-height: 1.1; }
+
+.idx { --plank: 160; }
+.idx-h { position: absolute; left: calc(70 * var(--u)); top: calc(80 * var(--u)); width: calc(940 * var(--u)); height: auto; --hs: 112; }
+.idx-sub { position: absolute; left: calc(72 * var(--u)); top: calc(300 * var(--u)); width: auto; height: auto; font: 600 38em var(--f-body); color: #2f2a24; }
+.idx-box { left: 40em; top: 360em; width: 640em; }
+.idx .tix { left: auto; right: calc(56 * var(--u)); top: calc(760 * var(--u)); width: calc(420 * var(--u)); --ts: 30; --rot: 2.2deg; }
+.idx .tix .tag { font-size: 1.7em; right: -.6em; top: -1.2em; }
+.idx-logo { position: absolute; left: calc(70 * var(--u)); top: auto; bottom: calc(60 * var(--u)); width: auto; height: auto; }
+
+.isx { --plank: 170; text-align: left; }
+/* a story keeps the top 250 px and the bottom 250 px free for the app's own bars */
+.isx .lg { position: absolute; left: calc(80 * var(--u)); top: calc(270 * var(--u)); }
+.isx-h { position: absolute; left: calc(80 * var(--u)); top: calc(560 * var(--u)); width: calc(900 * var(--u)); height: auto; --hs: 160; }
+.isx .tix { left: calc(80 * var(--u)); top: calc(740 * var(--u)); width: calc(520 * var(--u)); --ts: 36; --rot: -2deg; }
+.isx-box { right: -40em; top: 1110em; width: 700em; }
+.isx .hand { left: calc(660 * var(--u)); top: calc(860 * var(--u)); --ns: 60; --nr: -8deg; }
+.isx .hand svg { left: 1.4em; top: 1em; transform: rotate(60deg); }
+
+.fbx { --plank: 150; }
+.fbx .tab { --tx: 110; --tp: 22; }
+.fbx-h { position: absolute; left: calc(110 * var(--u)); top: calc(260 * var(--u)); width: calc(700 * var(--u)); height: auto; --hs: 76; }
+.fbx-box { left: 880em; top: 40em; width: 470em; }
+.fbx-pz { left: 1260em; top: 250em; width: 440em; }
+.fbx .hand { left: calc(470 * var(--u)); top: calc(470 * var(--u)); --ns: 40; --nr: -3deg; }
+
+.gcx { --plank: 140; }
+.gcx-box { left: 220em; top: 30em; width: 470em; }
+.gcx-pz { left: 640em; top: 250em; width: 400em; }
+.gcx .tab { --tx: 40; --tp: 14; }
+
+.abx2 { --plank: 170; }
+.abx2-box { left: 140em; top: 120em; width: 600em; }
+.abx2-pz { left: 820em; top: 360em; width: 560em; }
+.abx2 .tab { --tx: auto; --tp: 18; left: auto; right: calc(60 * var(--u)); inset: 0 calc(60 * var(--u)) auto auto; }
+
+.ogx { --plank: 140; }
+.ogx .tab { --tx: 64; --tp: 16; }
+.ogx-h { position: absolute; left: calc(64 * var(--u)); top: calc(220 * var(--u)); width: calc(560 * var(--u)); height: auto; --hs: 70; }
+.ogx-s { position: absolute; left: calc(66 * var(--u)); top: auto; bottom: calc(56 * var(--u)); width: auto; height: auto; font: 600 24em var(--f-body); color: #2f2a24; }
+.ogx-box { left: 680em; top: 40em; width: 470em; }
+
+.emx { display: flex; flex-direction: column; background: #fff; }
+.emx-top { position: relative; overflow: hidden; height: 430em; flex: none; --plank: 70; }
+.emx-top .tab { --tx: 32; --tp: 12; }
+.emx-h { position: absolute; left: calc(32 * var(--u)); top: calc(150 * var(--u)); width: calc(260 * var(--u)); height: auto; --hs: 40; }
+.emx-box { left: 290em; top: 110em; width: 290em; }
+.emx-deal { position: relative; padding: 30em 32em 32em; background: url(../assets/tex/paper.webp) 0 0 / 300em #fcfbf8; text-align: center; }
+.emx-deal .tix { position: relative; inset: auto; display: block; width: calc(330 * var(--u)); margin: 0 auto; --ts: 16; --rot: -1deg; text-align: left; }
+.emx-btn { display: inline-block; margin-top: calc(22 * var(--u)); padding: .75em 1.5em; border-radius: .35em; background: var(--tomato); color: #fff; font: 700 17em var(--f-display); }
+.emx-picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18em; padding: 24em 32em 26em; }
+.emx-picks img { width: 100%; height: auto; filter: drop-shadow(0 8em 8em rgba(40, 25, 10, .22)); }
+.emx-picks figcaption { display: grid; gap: .3em; margin-top: calc(8 * var(--u)); text-align: center; font-size: 13em; }
+.emx-picks b { font-family: var(--f-display); letter-spacing: .08em; }
+.emx-info { padding: calc(18 * var(--u)) calc(32 * var(--u)); border-top: calc(1 * var(--u)) solid #eee; font-size: 14em; line-height: 1.6; text-align: center; }
+.emx-foot { margin-top: auto; padding: calc(20 * var(--u)) calc(32 * var(--u)) calc(24 * var(--u)); background: var(--pine); font-size: 12em; line-height: 1.6; color: #e3f1e4; text-align: center; }
+.emx-foot u { color: #fff; }

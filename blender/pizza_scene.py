@@ -245,17 +245,17 @@ def mats():
     flat('pepper_y', (.92, .62, .03), .3, sss=.15, coat=.2)
     flat('caper', (.17, .20, .06), .3, coat=.3)
     flat('mozz', (.95, .91, .80), .4, sss=.5)
-    flat('onion', (.58, .30, .45), .3, sss=.5, coat=.1)
+    flat('onion', (.62, .26, .46), .25, sss=.8, coat=.25)
     flat('pineapple', (.92, .66, .16), .3, sss=.3, coat=.15)
     flat('chili', (.55, .05, .03), .3, coat=.15)
 
     def pep(nt, b, co, out):
         gf = sph(nt, co, .23)
-        rim, _ = ramp(nt, gf, [(0.0, (.12, .02, .01, 1)), (.06, (.26, .035, .02, 1)), (.16, (.40, .055, .03, 1)), (.5, (.48, .07, .04, 1))])
+        rim, _ = ramp(nt, gf, [(0.0, (.10, .018, .01, 1)), (.045, (.16, .025, .012, 1)), (.075, (.50, .075, .04, 1)), (.7, (.56, .085, .045, 1)), (1.0, (.44, .06, .03, 1))])
         fat = voronoi(nt, co, 34, 1)
-        fm, _ = ramp(nt, fat, [(0.0, (1, 1, 1, 1)), (.12, (1, 1, 1, 1)), (.2, (0, 0, 0, 1))])
-        col = mix(nt, rim, (.80, .42, .34, 1), fm)
-        nt.links.new(col, b.inputs['Base Color']); set_bsdf(b, rough=.48, coat=.05)
+        fm, _ = ramp(nt, fat, [(0.0, (1, 1, 1, 1)), (.09, (1, 1, 1, 1)), (.15, (0, 0, 0, 1))])
+        col = mix(nt, rim, (.86, .55, .45, 1), fm)
+        nt.links.new(col, b.inputs['Base Color']); set_bsdf(b, rough=.42, coat=.08)   # a little oily, never glassy
         bump(nt, b, fat, .35, .01)
     M['pepperoni'] = material('pepperoni', pep)
 
@@ -281,8 +281,8 @@ def mats():
 
     def jal(nt, b, co, out):
         gf = sph(nt, co, .1)
-        c, _ = ramp(nt, gf, [(0.0, (.10, .30, .05, 1)), (.12, (.18, .45, .09, 1)), (.3, (.78, .88, .55, 1))])
-        nt.links.new(c, b.inputs['Base Color']); set_bsdf(b, rough=.2, coat=.4)
+        c, _ = ramp(nt, gf, [(0.0, (.04, .16, .02, 1)), (.1, (.05, .19, .025, 1)), (.13, (.36, .58, .16, 1)), (.55, (.42, .64, .2, 1)), (.62, (.86, .86, .6, 1))])
+        nt.links.new(c, b.inputs['Base Color']); set_bsdf(b, rough=.3, sss=.3, coat=.3)
     M['jalapeno'] = material('jalapeno', jal)
 
     def ham(nt, b, co, out):
@@ -436,7 +436,7 @@ def make_topping(kind, M):
     elif kind == 'olive':
         torus(bm, .07, .03, 32, 12, sz=.5)     # a sliced olive ring
     elif kind == 'onion':
-        torus(bm, .13, .011, 48, 8, sy=.72, sz=.6)
+        strip(bm, .12, .022, 2.4, .007, 30)          # a curved sliver of red onion
     elif kind == 'chili':
         torus(bm, .05, .016, 16, 6, arc=math.pi)
     elif kind in ('pepper', 'pepper_y'):
@@ -475,9 +475,15 @@ def make_topping(kind, M):
             v.co.z += .018
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     elif kind == 'ham':
-        bmesh.ops.create_cube(bm, size=1)
+        # a torn piece: an irregular, slightly curled sheet
+        n = 11
+        top = [bm.verts.new(((.15 + .06 * noise.noise(Vector((i * .9, 1.3, 0)))) * math.cos(i / n * math.tau) * 1.25,
+                             (.15 + .06 * noise.noise(Vector((i * .9, 4.1, 0)))) * math.sin(i / n * math.tau) * .9, 0)) for i in range(n)]
+        bm.faces.new(top)
+        bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=2, use_grid_fill=True)
         for v in bm.verts:
-            v.co.x *= .34 * (1 + .12 * noise.noise(v.co * 7)); v.co.y *= .25 * (1 + .12 * noise.noise(v.co * 7 + Vector((5, 0, 0)))); v.co.z *= .014
+            v.co.z = .012 * noise.noise(v.co * 9) + .02 * (v.co.x * v.co.x)
+        bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=.012)
     elif kind == 'pineapple':
         bmesh.ops.create_cube(bm, size=1)
         for v in bm.verts:
@@ -489,8 +495,11 @@ def make_topping(kind, M):
             v.co.x *= 1.6; v.co.z *= .35
             v.co += v.co.normalized() * (.028 * noise.noise(v.co * 18) + .01 * noise.noise(v.co * 50))
     ob = mesh_obj(kind, bm, M[kind])
-    if kind in ('ham', 'pineapple'):
+    if kind == 'pineapple':
         mod = ob.modifiers.new('bev', 'BEVEL'); mod.width = .012; mod.segments = 3
+    # thin slices keep a sharp rim: smooth shading across it made every disc shade like a dome
+    if kind in ('pepperoni', 'tomato', 'jalapeno', 'ham', 'pineapple', 'onion', 'pepper', 'pepper_y', 'mushroom'):   # mozzarella melts: it stays soft
+        es = ob.modifiers.new('rim', 'EDGE_SPLIT'); es.split_angle = math.radians(32)
     return ob
 
 def strip(bm, R, width, arc, thick, nu=24):
@@ -612,6 +621,7 @@ def pizza_stills(pid, tops, seed):
     if 'top' in views:
         board.hide_render = True
         bpy.data.objects['floor'].hide_render = True
+        bpy.data.objects['key'].location = (-4.7, -5.4, 5.6)
         cam = camera('cam_top', (0, 0, 12), (0, 0, 0), ortho=TOP_ORTHO)
         render(os.path.join(OUT, 'pizza', f'{pid}-top{args.tag}.png'), cam)
 

@@ -2,7 +2,8 @@
 // Lift the lid (drag it up, tap it, or press Enter): it follows your finger on a spring and steam escapes.
 // Inside is the hero's own 3D pizza; the box drops away and the camera flies to the hero's exact view,
 // so the pizza simply stays put when the page appears. Skip and Escape always work. The head script
-// decides whether the intro runs (first visit of the session, no deep link, no reduced motion; ?intro forces it).
+// decides whether the intro runs (once per device every 30 days, no deep link, no saved basket, never with
+// reduced motion; ?intro replays it). The hero builds its own 3D pizza only after this one has landed.
 const root = document.documentElement;
 const el = document.getElementById('intro');
 let finish;
@@ -13,7 +14,7 @@ else { el?.remove(); finish(false); }
 
 async function start() {
   window.pmIntroReady = true;
-  try { sessionStorage.setItem('pm-intro', '1'); } catch (e) { /* private mode: show it again next time */ }
+  try { localStorage.setItem('pm-intro', String(Date.now())); } catch (e) { /* private mode: show it again next time */ }
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   scrollTo(0, 0);
 
@@ -26,12 +27,17 @@ async function start() {
   addEventListener('keydown', onKey);
   function onKey(e) { if (e.key === 'Escape') leave(true); }
 
+  // no WebGL, or the 3D too slow: straight to the page (and a late scene is never built, or is thrown away)
+  const cancel = { off: false };
+  const gl = (window.pmGL ??= (() => { try { const g = document.createElement('canvas').getContext('webgl2') || document.createElement('canvas').getContext('webgl'); g?.getExtension('WEBGL_lose_context')?.loseContext(); return !!g; } catch (e) { return false; } })());   // shared with js/app.js
+  if (!gl) return leave(true);
+  const load = import('./pizza3d.js').then(({ createIntro }) => createIntro(host, cancel));
   try {
-    const slow = new Promise((_, no) => setTimeout(() => no(new Error('intro 3D took too long')), 4000));
-    scene = await Promise.race([import('./pizza3d.js').then(({ createIntro }) => createIntro(host)), slow]);
+    const slow = new Promise((_, no) => setTimeout(() => { cancel.off = true; no(new Error('slow')); }, 4000));
+    scene = await Promise.race([load, slow]);
   } catch (err) {
-    console.error(err);
-    return leave(true);                       // no 3D: straight to the page
+    load.then((late) => late && late.dispose()).catch(() => {});
+    return leave(true);
   }
   if (leaving) return scene.dispose();
 
@@ -123,7 +129,7 @@ async function start() {
     removeEventListener('resize', placeBox);
     behind.forEach((n) => (n.inert = false));
     root.classList.add('intro-fly');
-    root.classList.remove('intro-on');            // the hero headline and props start their entrance
+    root.classList.remove('intro-on');
     el.classList.add('is-leaving');
     const title = document.getElementById('hero-title');
     if (title) { title.tabIndex = -1; title.focus({ preventScroll: true }); }
@@ -137,12 +143,16 @@ async function start() {
     setTimeout(land, 1900);                       // in case frames are held back (background tab)
   }
 
+  // the page now builds the hero pizza under this last frame; once it has drawn, the two cross-fade
   function land() {
     if (landed) return;
     landed = true;
-    root.classList.remove('intro-fly');           // the hero's own canvas fades in under the landed pizza
     finish(true);
-    el.classList.add('is-gone');
-    setTimeout(() => { scene?.dispose(); el.remove(); }, 500);
+    const drawn = Promise.race([window.pmHeroReady || Promise.resolve(), new Promise((res) => setTimeout(res, 1200))]);
+    drawn.then(() => {
+      root.classList.remove('intro-fly');         // the hero's own canvas fades in under the landed pizza
+      el.classList.add('is-gone');
+      setTimeout(() => { scene?.dispose(); el.remove(); }, 500);
+    });
   }
 }

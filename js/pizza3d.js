@@ -73,7 +73,7 @@ function cheeseEdge(g, s) {
   }
   g.closePath();
 }
-const cheeseTex = canvasTex(1024, 1024, (g, s) => {
+const cheeseTex = canvasTex(512, 512, (g, s) => {
   const c = s / 2, P = (x, y) => [c + x * s, c + y * s], r = rng(17);
   g.fillStyle = '#9a2817'; g.fillRect(0, 0, s, s);                                    // sauce
   for (let i = 0; i < 90; i++) blob(g, r() * s, r() * s, 10 + r() * 34, r() > .5 ? 'rgba(206,74,38,.45)' : 'rgba(120,22,12,.35)');
@@ -152,7 +152,7 @@ const tomTex = canvasTex(256, 256, (g, s) => {
   blob(g, c, c, 22, 'rgba(255,170,140,.9)');
 });
 
-const woodTex = canvasTex(1024, 1024, (g, s) => {
+const woodTex = canvasTex(512, 512, (g, s) => {
   g.fillStyle = '#c38c58'; g.fillRect(0, 0, s, s);
   const r = rng(5);
   for (let i = 0; i < 140; i++) {                       // straight grain
@@ -268,6 +268,23 @@ function sharedMats() {
     cap: new THREE.CircleGeometry(1, 32),
   });
 }
+// Blender-rendered flat textures (blender/pizza_scene.py --tex) replace the canvas ones once they load.
+// Loaded once for the intro and the hero, so the pizza that lands from the box is the same pizza.
+// The cheese keeps the canvas bump map: same mapping (repeat .27, offset .5), the sheet edges line up.
+let texLoad;
+function loadTextures() {
+  if (texLoad) return texLoad;
+  const tl = new THREE.TextureLoader();
+  const swap = (url, apply) => new Promise((res) => tl.load(url, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; apply(t); res(); }, undefined, () => res()));
+  const set = (m, t) => { m.map = t; m.needsUpdate = true; };
+  texLoad = Promise.all([
+    swap('assets/tex/wood.webp', (t) => set(sharedMats().wood, t)),
+    swap('assets/tex/tomato.webp', (t) => set(topAsset('tomato').mat, t)),
+    // a touch brighter and warmer than the flat render, to sit next to the menu stills
+    swap('assets/tex/cheese.webp', (t) => { t.repeat.set(.27, .27); t.offset.set(.5, .5); sharedMats().cheese.color.setRGB(1.08, 1.05, .98); set(sharedMats().cheese, t); }),
+  ]);
+  return texLoad;
+}
 function addLights(scene, renderer, groundY = -.19) {
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
@@ -382,7 +399,8 @@ function scatter(seed, place) {
 
 /* ======================================================== */
 // autoIntro: false when the page's own intro hands over to the pizza (call api.intro())
-export function createPizza(el, { autoIntro = true } = {}) {
+// onReady: called after the first frame is on screen (the intro waits for it before it fades)
+export function createPizza(el, { autoIntro = true, onReady } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 600 ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -390,6 +408,7 @@ export function createPizza(el, { autoIntro = true } = {}) {
   renderer.toneMappingExposure = .92;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.debug.checkShaderErrors = false;   // a synchronous status check per shader: hundreds of ms on a phone
   el.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -408,12 +427,8 @@ export function createPizza(el, { autoIntro = true } = {}) {
   renderer.domElement.style.touchAction = 'pan-y';   // OrbitControls sets 'none', which traps page scrolling on phones
 
   addLights(scene, renderer);
-  // Blender-rendered textures replace the canvas ones when present (assets/tex)
   let dirty = true;
-  const tl = new THREE.TextureLoader();
-  const swap = (url, apply) => tl.load(url, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; apply(t); dirty = true; }, undefined, () => {});
-  swap('assets/tex/wood.webp', (t) => { const m = sharedMats().wood; m.map = t; m.needsUpdate = true; });
-  swap('assets/tex/tomato.webp', (t) => { const m = topAsset('tomato').mat; m.map = t; m.needsUpdate = true; });
+  loadTextures().then(() => { dirty = true; });
   const stage = new THREE.Group();
   scene.add(stage);
   stage.add(makeBoard());
@@ -455,7 +470,7 @@ export function createPizza(el, { autoIntro = true } = {}) {
   // quick: the page intro already showed the toppings, so they are simply there and the board settles
   function intro(quick = false) {
     if (introDone) return; introDone = true;
-    rotateUntil = now() + 24;
+    rotateUntil = now() + 10;
     controls.autoRotate = !reduced;
     if (quick) {   // the intro's pizza has just landed here: same view, so no extra motion
       toppings.forEach((m) => { m.scale.setScalar(1); m.position.z = m.userData.z; });
@@ -562,11 +577,19 @@ export function createPizza(el, { autoIntro = true } = {}) {
   resize();
 
   let visible = true;
-  new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible && autoIntro) intro(); }).observe(el);
+  new IntersectionObserver(([en]) => {
+    visible = en.isIntersecting;
+    if (compiled) renderer.setAnimationLoop(visible ? loop : null);   // off screen: no frames at all
+    if (visible) dirty = true;
+    if (visible && autoIntro) intro();
+  }).observe(el);
   if (autoIntro) setTimeout(intro, 1500);
 
-  let last = now();
-  renderer.setAnimationLoop(() => {
+  let last = now(), compiled = false;
+  // compile every shader off the main thread first (KHR_parallel_shader_compile), then start drawing
+  const go = () => { compiled = true; dirty = true; if (visible) renderer.setAnimationLoop(loop); };
+  (renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve()).then(go, go);
+  function loop() {
     if (!visible) return;
     const t = now();
     last = t;
@@ -586,7 +609,8 @@ export function createPizza(el, { autoIntro = true } = {}) {
     if (!dirty) return;      // idle: nothing changed, skip the frame
     dirty = false;
     renderer.render(scene, camera);
-  });
+    if (onReady) { const f = onReady; onReady = null; f(); }
+  }
 
   el.classList.remove('is-loading');
   return {
@@ -666,9 +690,12 @@ function buildBox(tex) {
   return { group: g, lid, mats: Object.values(mats) };
 }
 
-export async function createIntro(host) {
+export async function createIntro(host, cancel = {}) {
   // the printed lid uses the brand fonts: make sure they are ready before drawing it
   try { await Promise.all(['italic 800 120px "Plus Jakarta Sans"', '700 30px "Plus Jakarta Sans"', '700 74px Caveat'].map((f) => document.fonts.load(f))); } catch (e) { /* fall back to system fonts */ }
+  // the same cheese and tomatoes as the hero, so nothing changes when the pizza lands (never wait long for them)
+  await Promise.race([loadTextures(), new Promise((res) => setTimeout(res, 1500))]);
+  if (cancel.off) return null;               // the page gave up waiting: don't start a second WebGL context
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 600 ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -676,6 +703,7 @@ export async function createIntro(host) {
   renderer.toneMappingExposure = .92;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.debug.checkShaderErrors = false;
   host.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();

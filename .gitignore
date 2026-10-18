@@ -1,2 +1,4 @@
 .impeccable/
 __pycache__/
+# render provenance notes: kept locally, not published with the images
+*.webp.json

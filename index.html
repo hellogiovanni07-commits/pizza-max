@@ -9,21 +9,40 @@
 <meta property="og:title" content="Pizza Max Berlin">
 <meta property="og:description" content="Stone-oven pizza from fresh ingredients, delivered hot in the box.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23e3a453'/%3E%3Ccircle cx='32' cy='32' r='24' fill='%23f3cf7c'/%3E%3Ccircle cx='24' cy='26' r='5' fill='%23c4352e'/%3E%3Ccircle cx='40' cy='24' r='5' fill='%23c4352e'/%3E%3Ccircle cx='34' cy='41' r='5' fill='%23c4352e'/%3E%3C/svg%3E">
+<meta property="og:url" content="https://hellogiovanni07-commits.github.io/pizza-max/">
+<meta property="og:image" content="https://hellogiovanni07-commits.github.io/pizza-max/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<!-- remove at launch, once the address, phone number and prices are real -->
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <!-- TechNext brand type: Plus Jakarta Sans (display), Inter (body), Caveat (hand). Self-hosted: no request
      leaves this site for fonts or scripts (GDPR). -->
 <link rel="preload" href="fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
+<noscript><style>.menu-controls, .menu-view, .more-menu, #strip, .deal-panel, .hero-pick, #pullSlice, .today-open, .today-zip, .zip, .zones-title + .zone-list:empty, #openStatus, .open-foot, .cart-btn, .hero-pizza, .nav-toggle { display: none !important; } #mainnav { display: flex !important; position: static !important; flex-direction: row !important; padding: 0 !important; box-shadow: none !important; } #mainnav a { border: 0 !important; }</style></noscript>
 <script>
-  // first visit of the session: the open-the-box intro (not with reduced motion or a deep link; ?intro forces it)
+  // the open-the-box intro: once per device every 30 days, never with reduced motion (not even with ?intro),
+  // not on a deep link and not when a basket is waiting; ?intro replays it
   (function () {
-    var force = /[?&]intro(?:[=&]|$)/.test(location.search), seen = false;
-    try { seen = sessionStorage.getItem('pm-intro') === '1'; } catch (e) {}
-    if (force || (!seen && !location.hash && !matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    var force = /[?&]intro(?:[=&]|$)/.test(location.search), seen = false, basket = false;
+    try {
+      seen = Date.now() - (+localStorage.getItem('pm-intro') || 0) < 30 * 864e5;
+      var b = JSON.parse(localStorage.getItem('pm-basket') || 'null');
+      basket = !!(b && b.cart && b.cart.length);
+    } catch (e) {}
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (force || (!seen && !basket && !location.hash))) {
       document.documentElement.classList.add('intro-on');
       // if the script never arrives, never trap the page behind the intro
-      setTimeout(function () { if (!window.pmIntroReady) document.documentElement.classList.remove('intro-on'); }, 6000);
+      var off = function () { if (!window.pmIntroReady) document.documentElement.classList.remove('intro-on'); };
+      setTimeout(off, 4000);
+      document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#introSkip')) off(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') off(); });
+      document.addEventListener('focusin', function (e) {
+        var skip = document.getElementById('introSkip');
+        if (!window.pmIntroReady && document.documentElement.classList.contains('intro-on') && skip && e.target !== skip) skip.focus();
+      }, true);
     }
   })();
 </script>
@@ -45,7 +64,7 @@
   <button class="intro-box" id="introBox" type="button" aria-label="Open the pizza box"></button>
   <div class="intro-words" aria-hidden="true">
     <p class="intro-hint"><svg viewBox="0 0 32 32"><path d="M16 29 Q7 18 16 4 M16 4 l-6 5 M16 4 l5 6"/></svg>lift the lid!</p>
-    <p class="intro-tag">Hot from the stone oven. <span>Straight to you.</span></p>
+    <p class="intro-tag">...tasty in the box!</p>
   </div>
   <button class="intro-skip" id="introSkip" type="button">Skip intro</button>
 </div>
@@ -55,9 +74,9 @@
 <!-- ===== TOP BAR ===== -->
 <aside class="topbar" aria-label="Shop status">
   <div class="wrap topbar-in">
-    <span class="addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>Wollankstr. 20, 12345 Berlin</span>
+    <span class="addr"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>Wollankstr. 20, 13187 Berlin</span>
     <span class="open-status" id="openStatus" role="status"><i aria-hidden="true"></i><span>Opening hours</span></span>
-    <span class="topbar-links"><a class="topbar-phone" href="tel:+493012345678">030 123 456 78</a><a class="topbar-call" href="tel:+493012345678">Call</a><a class="topbar-kontakt" href="#kontakt">Contact</a></span>
+    <span class="topbar-links"><a class="topbar-phone" href="tel:+493012345678">030 123 456 78</a><a class="topbar-call" href="tel:+493012345678">Call</a></span>
   </div>
 </aside>
 
@@ -67,79 +86,131 @@
     <a class="logo" href="#top" aria-label="Pizza Max, home">
       <span class="logo-pizza">Pizza</span>
       <span class="logo-max">MAX</span>
-      <svg class="logo-swoosh" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 10 Q60 -2 118 6" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"/><path d="M8 13 Q62 3 116 10" fill="none" stroke="#4caf50" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="logo-swoosh" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 10 Q60 -2 118 6" fill="none" stroke="#43a047" stroke-width="3" stroke-linecap="round"/><path d="M8 13 Q62 3 116 10" fill="none" stroke="#43a047" stroke-width="2" stroke-linecap="round"/></svg>
       <span class="logo-tag">...tasty in the box!</span>
     </a>
     <button class="nav-toggle" aria-expanded="false" aria-controls="mainnav"><span></span><span></span><span></span><b class="sr-only">Open menu</b></button>
     <nav id="mainnav" aria-label="Main">
       <a href="#aktion" data-spy="aktion">Deals</a>
-      <a href="#menu" data-cat="pizza" data-spy="menu">Pizza</a>
-      <a href="#menu" data-cat="burger">Burgers</a>
-      <a href="#menu" data-cat="pasta">Pasta</a>
-      <a href="#menu" data-cat="salate">Salads</a>
-      <a href="#menu" data-cat="kids">Kids</a>
-      <a href="#menu" data-cat="desserts">Desserts</a>
-      <a href="#menu" data-cat="getraenke">Drinks</a>
+      <a href="#menu" data-spy="menu">Menu</a>
+      <a href="#liefern" data-spy="liefern">Delivery area</a>
+      <a href="#kontakt" data-spy="kontakt">Contact</a>
       <a class="nav-call" href="tel:+493012345678">Call 030 123 456 78</a>
     </nav>
   </div>
 </header>
 <div class="nav-scrim" id="navScrim" hidden></div>
+<!-- the basket: early in the Tab order, fixed on screen -->
+<button class="cart-btn" id="cartBtn" aria-controls="cart" aria-expanded="false">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18l-2 13H5L3 7Zm5 0V5a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+  <span class="cart-count" id="cartCount">0</span>
+  <span class="sr-only">Open basket</span>
+</button>
+<button class="order-bar" id="orderBar" hidden aria-controls="cart"><span class="ob-count" id="obCount">1</span><span class="ob-label">View basket</span><span class="ob-total num" id="obTotal">€0.00</span></button>
 
 <main id="top" class="wood">
 
   <!-- ===== HERO ===== -->
   <section class="hero" aria-labelledby="hero-title">
-    <div class="props" aria-hidden="true">
-      <img class="prop prop-basil" src="assets/props/basil.webp" alt="" width="254" height="420">
-      <img class="prop prop-tomato" src="assets/props/tomato.webp" alt="" width="420" height="415">
-      <img class="prop prop-chili" src="assets/props/chili.webp" alt="" width="420" height="130">
-      <img class="prop prop-sauce" src="assets/props/sauce.webp" alt="" width="420" height="394">
-      <img class="prop prop-olives" src="assets/props/olives.webp" alt="" width="420" height="312">
-    </div>
-
-    <div class="wrap hero-grid">
+    <!-- the counter: the headline leans into the board, the pizza in the middle, today's oven ticket lying beside it -->
+    <div class="hero-stage">
       <div class="hero-copy">
-        <h1 id="hero-title" class="hero-title"><span class="ht-line">Hot from the</span> <span class="ht-line ht-red">stone oven.</span></h1>
-        <p class="hero-lead">Dough rested for 24 hours, tomato sauce from our own pot, 90 seconds at 400&nbsp;°C. From Pankow, straight to your door.</p>
-        <div class="hero-cta">
-          <a class="btn btn-red btn-lg" href="#menu">Order now</a>
-          <a class="btn btn-ghost btn-lg" href="#aktion">See the deals</a>
-        </div>
-        <ul class="trust" aria-label="Good to know">
-          <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8h12l-1 9H5zM7 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Pickup ready in about 20 min</li>
-          <li><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v4.5l3 1.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Delivered in about 30 min</li>
-          <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 6h10v8H2zM12 9h3l3 3v2h-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="6" cy="15" r="1.6" fill="currentColor"/><circle cx="15" cy="15" r="1.6" fill="currentColor"/></svg>Delivery from €15, always free</li>
-        </ul>
+        <h1 id="hero-title" class="hero-title">Stone&#8209;oven pizza for <em>Pankow.</em></h1>
+        <p class="hero-lead">Dough rested for 24 hours, tomato sauce from our own pot, baked on the stone.</p>
+        <div class="hero-cta"><a class="btn btn-red btn-lg" id="heroCta" href="#menu">Order now</a></div>
       </div>
 
       <div class="hero-visual">
+        <noscript><img class="hero-still" src="assets/pizza/garden-angle.webp" alt="Our Veggie Garden pizza on a wooden board" width="760" height="760"></noscript>
         <div class="hero-pizza" id="pizza3d" role="img" aria-label="3D pizza on a wooden board. Drag to spin it, or use the Pull a slice button."></div>
         <button class="hand-note" id="pullSlice" type="button">pull a slice!<svg viewBox="0 0 80 40" aria-hidden="true"><path d="M4 6 Q40 4 66 30 M66 30 l-12 -2 M66 30 l-2 -12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></button>
-        <p class="hero-pick">On the board: <b>Veggie Garden</b> <button type="button" class="mini-btn" id="heroAdd"><span class="add-label">Add it</span> · Maxi <span class="num">€13.20</span></button></p>
+        <p class="hero-pick">That's our <b>Veggie Garden</b> <button type="button" class="mini-btn" id="heroAdd"><span class="add-label">Add a Maxi, 32 cm</span> · <span class="num">€13.20</span></button></p>
       </div>
+
+      <!-- today's oven, printed on the shop's order ticket: open or not, how soon, and does it come to you -->
+      <section class="today" aria-labelledby="today-title">
+        <h2 class="today-head" id="today-title"><span>Today's oven</span> <span class="num" id="todayDate"></span></h2>
+        <p class="today-open" id="todayOpen"><i aria-hidden="true"></i><span>Opening hours below</span></p>
+        <ul class="today-rows">
+          <li><span>Pickup</span><span class="lead" aria-hidden="true"></span><b id="todayPickup">ready in about 20 min</b></li>
+          <li><span>Delivery</span><span class="lead" aria-hidden="true"></span><b id="todayDelivery">in about 30 min</b></li>
+          <li><span>Minimum order</span><span class="lead" aria-hidden="true"></span><b><span class="num">€15</span>, no delivery fee</b></li>
+          <li><span>Pizza</span><span class="lead" aria-hidden="true"></span><b>from <span class="num">€8.50</span></b></li>
+        </ul>
+        <form class="today-zip" id="heroZipForm" novalidate>
+          <label for="heroZip">Deliver to<span class="sr-only"> postcode</span></label>
+          <input id="heroZip" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="postcode" aria-describedby="heroZipMsg">
+          <button class="btn btn-ink" type="submit">Check</button>
+        </form>
+        <div class="today-msg" id="heroZipMsg" aria-live="polite"></div>
+      </section>
     </div>
   </section>
 
   <!-- ===== DEALS ===== -->
   <section class="aktion" id="aktion" aria-labelledby="aktion-title">
     <div class="wrap">
-      <h2 id="aktion-title" class="section-title">Deals</h2>
-      <p class="section-sub">More pizza, less to pay.</p>
-      <div class="deals" id="strip"></div>
+      <div class="sec-head">
+        <h2 id="aktion-title" class="section-title">Deals</h2>
+        <p class="sec-sub">Stacked the way they leave the shop. You choose the pizzas that go in the boxes.</p>
+      </div>
+      <noscript><p class="noscript-deals">Solo €13.90: 1 Maxi pizza, 1 drink · Duo €29.90: 2 Maxi pizzas, 2 drinks, 1 dessert · Party €59.90: 3 Wumbo pizzas, 4 drinks, 2 desserts. To order, call <a href="tel:+493012345678">030 123 456 78</a>.</p></noscript>
+      <!-- each deal is its stack of boxes on the counter, tallest for the biggest, with the order ticket in front;
+           the chooser opens full width under the row (on phones, right under the deal) -->
+      <div class="deals" id="strip">
+        <section class="deal-panel" id="dealPanel" aria-label="Deal chooser" hidden></section>
+      </div>
     </div>
   </section>
 
   <!-- ===== MENU ===== -->
   <section class="menu" id="menu" aria-labelledby="menu-title">
     <div class="wrap">
-      <h2 id="menu-title" class="section-title">Our menu</h2>
-      <p class="section-sub">Every pizza is made to order. Pick a size, add the cheese-stuffed crust if you like, done.</p>
+      <div class="sec-head sec-head-menu">
+        <h2 id="menu-title" class="section-title">Our menu</h2>
+        <div class="sizes">
+          <ul class="sizes-row" aria-label="Pizza sizes, drawn to scale">
+            <li><img src="assets/pizza/marg-top-240.webp" alt="" width="52" height="52" style="--d:26"><b>Standard</b><span>26 cm</span></li>
+            <li><img src="assets/pizza/marg-top-240.webp" alt="" width="64" height="64" style="--d:32"><b>Maxi</b><span>32 cm</span></li>
+            <li><img src="assets/pizza/marg-top-240.webp" alt="" width="76" height="76" style="--d:38"><b>Wumbo</b><span>38 cm</span></li>
+          </ul>
+          <p class="sizes-note">Every pizza made to order · cheese-stuffed crust <span class="num">+€2.50</span></p>
+        </div>
+      </div>
 
+      <noscript>
+        <div class="noscript-menu">
+          <p><b>Ordering online needs JavaScript.</b> Here is the whole menu; to order, call <a href="tel:+493012345678">030 123 456 78</a>.</p>
+          <h3>Pizza <small>Standard 26 cm · Maxi 32 cm · Wumbo 38 cm · cheese-stuffed crust +€2.50</small></h3>
+          <ul>
+          <li><b>Margherita Deluxe</b> <span class="num">€8.50 · €12.50 · €17.40</span><br><span>Mozzarella, Gouda, sliced tomatoes, basil pesto</span><br><small>Allergens: gluten, wheat, milk, egg, tree nuts, cashew</small></li>
+          <li><b>Salami Max</b> <span class="num">€9.00 · €13.00 · €17.90</span><br><span>Double beef salami, cheese, oregano</span><br><small>Allergens: gluten, wheat, milk · Contains: preservative, antioxidant</small></li>
+          <li><b>Diavolo</b> <span class="num">€9.50 · €13.50 · €18.40</span><br><span>Hot salami, mozzarella, jalapeños, red onion, chilli oil</span><br><small>Allergens: gluten, wheat, milk · Contains: preservative, antioxidant</small></li>
+          <li><b>Funghi Fresco</b> <span class="num">€8.90 · €12.90 · €17.60</span><br><span>Mushrooms, garlic, thyme, mozzarella</span><br><small>Allergens: gluten, wheat, milk</small></li>
+          <li><b>Veggie Garden</b> <span class="num">€9.20 · €13.20 · €17.90</span><br><span>Mozzarella, peppers, olives, mushrooms, tomatoes, rocket</span><br><small>Allergens: gluten, wheat, milk</small></li>
+          <li><b>Tonno Cipolla</b> <span class="num">€9.40 · €13.40 · €18.20</span><br><span>Tuna, mozzarella, red onion, capers, olives</span><br><small>Allergens: gluten, wheat, fish, milk</small></li>
+          <li><b>Hawaii</b> <span class="num">€9.20 · €13.20 · €17.90</span><br><span>Cooked ham, pineapple, extra cheese</span><br><small>Allergens: gluten, wheat, milk · Contains: preservative, antioxidant</small></li>
+          <li><b>Max Supreme</b> <span class="num">€10.90 · €14.90 · €19.90</span><br><span>Salami, ham, mozzarella, peppers, olives, mushrooms, onion, jalapeños</span><br><small>Allergens: gluten, wheat, milk · Contains: preservative, antioxidant</small></li>
+          </ul>
+        <h3>Burgers</h3>
+        <ul><li>Max Burger <span class="num">€9.90</span></li><li>Cheese Smash <span class="num">€11.50</span></li><li>Chicken Crunch <span class="num">€9.50</span></li><li>Veggie Burger <span class="num">€9.90</span></li></ul>
+        <h3>Pasta</h3>
+        <ul><li>Spaghetti Bolognese <span class="num">€8.90</span></li><li>Penne Arrabbiata <span class="num">€8.50</span></li><li>Tagliatelle Carbonara <span class="num">€9.90</span></li></ul>
+        <h3>Salads</h3>
+        <ul><li>Caesar Salad <span class="num">€8.50</span></li><li>Greek Salad <span class="num">€8.20</span></li><li>Rocket & Grana <span class="num">€7.90</span></li></ul>
+        <h3>Kids</h3>
+        <ul><li>Mini Margherita <span class="num">€5.90</span></li><li>Nuggets & Fries <span class="num">€6.50</span></li></ul>
+        <h3>Desserts</h3>
+        <ul><li>Tiramisu <span class="num">€4.90</span></li><li>Chocolate Lava Cake <span class="num">€5.50</span></li></ul>
+        <h3>Drinks</h3>
+        <ul><li>Cola 0.5 l <span class="num">€2.90</span></li><li>Lemonade 0.33 l <span class="num">€3.20</span></li><li>Still water 0.5 l <span class="num">€2.20</span></li><li>Sparkling water 0.5 l <span class="num">€2.20</span></li></ul>
+          <p><b>Deals:</b> Solo €13.90 (1 Maxi pizza, 1 drink) · Duo €29.90 (2 Maxi pizzas, 2 drinks, 1 dessert) · Party €59.90 (3 Wumbo pizzas, 4 drinks, 2 desserts).</p>
+        </div>
+      </noscript>
       <div class="menu-controls">
       <div class="mc-group"><span class="mc-label" aria-hidden="true">Show as</span>
       <div class="menu-switch" role="tablist" aria-label="Menu style">
-        <button role="tab" aria-selected="true" aria-controls="view-panels" id="tab-panels" data-view="panels">Cards</button>
+        <button role="tab" aria-selected="true" aria-controls="view-cards" id="tab-cards" data-view="cards">Cards</button>
         <button role="tab" aria-selected="false" aria-controls="view-wheel" id="tab-wheel" data-view="wheel" tabindex="-1">Pizza wheel</button>
         <button role="tab" aria-selected="false" aria-controls="view-board" id="tab-board" data-view="board" tabindex="-1">Full list</button>
         <button role="tab" aria-selected="false" aria-controls="view-boxes" id="tab-boxes" data-view="boxes" tabindex="-1">Boxes</button>
@@ -155,15 +226,15 @@
       </div>
       </div>
 
-      <div class="menu-view" id="view-panels" role="tabpanel" aria-labelledby="tab-panels">
-        <div class="cards" id="panels"></div>
+      <div class="menu-view" id="view-cards" role="tabpanel" aria-labelledby="tab-cards">
+        <div class="cards" id="cards"></div>
       </div>
 
       <div class="menu-view" id="view-wheel" role="tabpanel" aria-labelledby="tab-wheel" hidden>
         <div class="wheel-wrap">
           <div class="wheel-col">
             <div class="wheel-box">
-              <svg class="wheel" id="wheel" viewBox="0 0 220 220" role="group" aria-label="Pizza wheel. Each slice is a different pizza."></svg>
+              <svg class="wheel" id="wheel" viewBox="0 0 220 220" tabindex="-1" role="group" aria-label="Pizza wheel. Each slice is a different pizza."></svg>
               <p class="wheel-name" id="wheelName" aria-hidden="true"></p>
             </div>
             <button type="button" class="btn btn-ghost wheel-spin" id="wheelSpin"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11 3.4M13.5 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Spin the wheel</button>
@@ -181,37 +252,49 @@
       <div class="menu-view" id="view-boxes" role="tabpanel" aria-labelledby="tab-boxes" hidden>
         <div class="boxes" id="boxes"></div>
       </div>
-      <p class="menu-note">Allergens are listed under every pizza. For other dishes, just ask us when you order. <a href="#allergene">Allergen key</a></p>
+
+      <!-- everything that isn't pizza, under every view: add it from here, whichever view you chose -->
+      <section class="more-menu" id="more" aria-labelledby="more-title">
+        <div class="more-head">
+          <h3 id="more-title" class="more-title">More than pizza</h3>
+          <p class="more-note">Allergens for these dishes: just ask us when you order. Pizza allergens are listed with each pizza (<a href="#allergene">key</a>).</p>
+        </div>
+        <div class="more-cats" id="moreCats"></div>
+      </section>
     </div>
   </section>
 
-  <!-- ===== OFEN BAND: order journey with its proof numbers ===== -->
-  <section class="ofen" aria-labelledby="ofen-title">
+  <!-- ===== REVIEWS: a marked slot for real reviews (nothing made up) ===== -->
+  <section class="reviews" aria-labelledby="reviews-title">
     <div class="wrap">
-      <h2 id="ofen-title" class="section-title section-title-light">From our oven to you</h2>
-      <p class="section-sub section-sub-light">What goes into every pizza, and how fast it reaches you.</p>
-      <ol class="journey-track">
-        <li class="j-step">
-          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="24" r="8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="3 4"/><circle cx="20" cy="21" r="2" fill="currentColor"/><circle cx="28" cy="26" r="2" fill="currentColor"/></svg></span>
-          <b class="j-num">24 h</b>
-          <h3>Dough</h3><p>Made the day before, stretched by hand to order.</p>
-        </li>
-        <li class="j-step">
-          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M10 22h28v12a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M6 22h36" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M19 16c0-3 3-3 3-6M27 16c0-3 3-3 3-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
-          <b class="j-num">Daily</b>
-          <h3>Sauce</h3><p>Tomatoes simmered in our own pot every morning.</p>
-        </li>
-        <li class="j-step">
-          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M8 36V22a16 16 0 0 1 32 0v14Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 36c0-5 3-6 3-10 3 2 6 5 6 10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M5 36h38" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
-          <b class="j-num">400 °C</b>
-          <h3>Stone oven</h3><p>90 seconds, until the crust blisters.</p>
-        </li>
-        <li class="j-step">
-          <span class="j-ico" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M6 20h36v18H6Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M6 20l4-8h28l4 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 29h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
-          <b class="j-num">30 min</b>
-          <h3>In the box</h3><p>Hot at your door anywhere in Pankow.</p>
-        </li>
-      </ol>
+      <div class="review-slot">
+        <span class="slot-tag">Placeholder</span>
+        <h2 id="reviews-title" class="slot-title">What Pankow says about us</h2>
+        <p>Real customer reviews and the shop's public rating go here before launch, quoted with the reviewer's permission. Until then this space stays empty: we don't show made-up reviews.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DELIVERY AREA: the postcodes we drive to, and the check ===== -->
+  <section class="deliver" id="liefern" aria-labelledby="deliver-title">
+    <div class="wrap deliver-in">
+      <div class="deliver-copy">
+        <h2 id="deliver-title" class="deliver-title">We deliver to 12 postcodes around Pankow.</h2>
+        <p class="deliver-lead">Minimum order €15, no delivery fee, at your door in about 30 minutes. Outside the area? Pick up at Wollankstr. 20, ready in about 20 minutes.</p>
+        <form class="zip" id="zipForm" novalidate>
+          <label for="zip">Type your postcode, or tap it in the area list</label>
+          <div class="zip-row">
+            <input id="zip" name="zip" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="e.g. 13187" aria-describedby="zipMsg">
+            <button class="btn btn-light" type="submit">Check</button>
+          </div>
+          <div class="zip-msg" id="zipMsg" aria-live="polite"></div>
+        </form>
+      </div>
+      <div class="zones">
+        <h3 class="zones-title" id="zonesTitle">Our delivery area</h3>
+        <ul class="zone-list" id="zoneList" aria-labelledby="zonesTitle"></ul>
+        <noscript><p class="noscript-zones">Pankow 13187, 13189 · Niederschönhausen 13156 · Rosenthal, Wilhelmsruh 13158 · Prenzlauer Berg 10437, 10439, 10409 · Weißensee 13086, 13088 · Französisch Buchholz 13127 · Blankenburg 13129 · Karow, Buch 13125</p></noscript>
+      </div>
     </div>
   </section>
 
@@ -221,15 +304,8 @@
       <div>
         <h2 id="contact-title" class="section-title section-title-left">Give us a call</h2>
         <p class="contact-phone"><a href="tel:+493012345678">030 123 456 78</a></p>
-        <address>Wollankstr. 20, 12345 Berlin</address>
-        <form class="zip" id="zipForm" novalidate>
-          <label for="zip">Do we deliver to you?</label>
-          <div class="zip-row">
-            <input id="zip" name="zip" inputmode="numeric" autocomplete="postal-code" placeholder="Postcode, e.g. 13187" aria-describedby="zipMsg">
-            <button class="btn btn-red" type="submit">Check</button>
-          </div>
-          <div class="zip-msg" id="zipMsg" aria-live="polite"></div>
-        </form>
+        <address>Wollankstr. 20, 13187 Berlin</address>
+        <p class="contact-note">Orders by phone too, during opening hours. <a href="#liefern">Check the delivery area</a></p>
       </div>
       <dl class="hours" aria-label="Opening hours">
         <div><dt>Mon – Thu</dt><dd>11:00 – 23:00</dd></div>
@@ -258,7 +334,7 @@
       <a class="logo logo-foot" href="#top" aria-label="Pizza Max, back to top">
         <span class="logo-pizza">Pizza</span>
         <span class="logo-max">MAX</span>
-        <svg class="logo-swoosh" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 10 Q60 -2 118 6" fill="none" stroke="#4caf50" stroke-width="3" stroke-linecap="round"/><path d="M8 13 Q62 3 116 10" fill="none" stroke="#4caf50" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg class="logo-swoosh" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 10 Q60 -2 118 6" fill="none" stroke="#43a047" stroke-width="3" stroke-linecap="round"/><path d="M8 13 Q62 3 116 10" fill="none" stroke="#43a047" stroke-width="2" stroke-linecap="round"/></svg>
         <span class="logo-tag">...tasty in the box!</span>
       </a>
       <p class="open-foot" id="openFoot"></p>
@@ -269,39 +345,35 @@
     </nav>
     <nav aria-label="Service">
       <h2>Service</h2>
-      <a href="#aktion">Deals</a><a href="#kontakt">Check delivery</a><a href="#allergene">Allergens</a>
+      <a href="#aktion">Deals</a><a href="#liefern">Delivery area</a><a href="#allergene">Allergens</a>
     </nav>
-    <div>
+    <div class="foot-contact">
       <h2>Contact</h2>
-      <p><a href="tel:+493012345678">030 123 456 78</a><br>Wollankstr. 20<br>12345 Berlin</p>
+      <a href="tel:+493012345678">030 123 456 78</a><address>Wollankstr. 20, 13187 Berlin</address>
     </div>
   </div>
   <div class="wrap footer-base">
-    <p>© 2026 Pizza Max Berlin</p>
-    <p class="legal"><a href="impressum.html">Legal notice (Impressum)</a><a href="datenschutz.html">Privacy policy</a><a href="#top">Back to top</a></p>
+    <p>© 2026 Pizza Max Berlin · <span class="demo-note">Demo site: the address, phone number, delivery area and prices are placeholders.</span></p>
+    <p class="legal"><a href="impressum.html" target="_blank" rel="noopener">Legal notice (Impressum)<span class="sr-only"> (opens in a new tab)</span></a><a href="datenschutz.html" target="_blank" rel="noopener">Privacy policy<span class="sr-only"> (opens in a new tab)</span></a><a href="#top">Back to top</a></p>
   </div>
 </footer>
 
 <!-- ===== BASKET ===== -->
-<button class="cart-btn" id="cartBtn" aria-controls="cart" aria-expanded="false">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18l-2 13H5L3 7Zm5 0V5a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-  <span class="cart-count" id="cartCount">0</span>
-  <span class="sr-only">Open basket</span>
-</button>
 <div class="scrim" id="scrim" hidden></div>
-<aside class="cart" id="cart" role="dialog" aria-modal="true" aria-labelledby="cartTitle" hidden>
+<div class="cart" id="cart" role="dialog" aria-modal="true" aria-labelledby="cartTitle" hidden>
   <div class="cart-head"><h2 id="cartTitle" tabindex="-1">Your basket</h2><button class="cart-close" id="cartClose" aria-label="Close basket"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>
   <div class="cart-main" id="cartMain">
     <ul class="cart-list" id="cartList"></ul>
     <div class="cart-foot">
-      <div class="seg mode" role="radiogroup" aria-label="Delivery or pickup">
-        <button role="radio" aria-checked="true" data-mode="delivery">Delivery</button>
-        <button role="radio" aria-checked="false" data-mode="pickup" tabindex="-1">Pickup</button>
-      </div>
-      <div class="cart-zip deliv-only">
-        <label for="cartZip">Your postcode</label>
-        <input id="cartZip" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 13187" aria-describedby="cartZipMsg">
-        <p class="cart-zip-msg" id="cartZipMsg" aria-live="polite"></p>
+      <div class="cart-ship">
+        <div class="seg mode" role="radiogroup" aria-label="Delivery or pickup">
+          <button role="radio" aria-checked="true" data-mode="delivery">Delivery</button>
+          <button role="radio" aria-checked="false" data-mode="pickup" tabindex="-1">Pickup</button>
+        </div>
+        <div class="cart-zip deliv-only">
+          <label for="cartZip">Postcode</label>
+          <input id="cartZip" inputmode="numeric" autocomplete="postal-code" maxlength="5" aria-describedby="cartMin">
+        </div>
       </div>
       <div class="cart-min" id="cartMin" aria-live="polite"></div>
       <p class="cart-total">Total <b id="cartTotal" class="num">€0.00</b></p>
@@ -313,7 +385,7 @@
     <details class="form-sum"><summary id="formSumTitle">Your order</summary><ul class="done-list" id="formList"></ul></details>
     <div class="field"><label for="fName">Name</label><input id="fName" autocomplete="name" required aria-describedby="fNameErr"><p class="err" id="fNameErr"></p></div>
     <div class="field"><label for="fPhone">Phone</label><input id="fPhone" type="tel" autocomplete="tel" inputmode="tel" required aria-describedby="fPhoneErr"><p class="err" id="fPhoneErr"></p></div>
-    <div class="field deliv-only"><label for="fStreet">Street and number</label><input id="fStreet" autocomplete="street-address" required aria-describedby="fStreetErr"><p class="err" id="fStreetErr"></p></div>
+    <div class="field deliv-only"><label for="fStreet">Street and number</label><input id="fStreet" autocomplete="address-line1" required aria-describedby="fStreetErr"><p class="err" id="fStreetErr"></p></div>
     <p class="field-note deliv-only" id="fZipNote"></p>
     <div class="field"><label for="fWhen">When</label><select id="fWhen"></select></div>
     <div class="field"><label for="fNote">Note <span class="opt">(optional)</span></label><input id="fNote" autocomplete="off" placeholder="Doorbell, floor, anything we should know"></div>
@@ -332,18 +404,21 @@
       <span class="done-base"></span>
       <span class="done-lid"><b>Pizza <i>MAX</i></b></span>
     </div>
-    <p class="done-stamp" aria-hidden="true">Thanks!</p>
+    <p class="done-stamp" id="doneStamp" aria-hidden="true">Thanks!</p>
+    <p class="done-ref" id="doneRef"></p>
     <p class="done-eta" id="doneEta"></p>
     <p class="done-to" id="doneTo"></p>
     <ol class="done-steps" aria-label="Order progress">
-      <li class="is-done">Received</li><li class="is-now" id="doneNow">In the oven</li><li>In the box</li><li id="doneLast">On its way</li>
+      <li class="is-now" aria-current="step">Received</li><li id="doneNow">In the oven</li><li>In the box</li><li id="doneLast">On its way</li>
     </ol>
     <ul class="done-list" id="doneList"></ul>
+    <p class="done-help">Something to change? Call <a href="tel:+493012345678">030 123 456 78</a> and give us your order number.</p>
     <p class="done-note">Demo: no real order was sent.</p>
     <button class="btn btn-ghost btn-block" id="doneClose">Keep browsing</button>
   </div>
-</aside>
-<button class="order-bar" id="orderBar" hidden aria-controls="cart"><span class="ob-count" id="obCount">1</span><span class="ob-label">View basket</span><span class="ob-total num" id="obTotal">€0.00</span></button>
+</div>
+
+<dialog class="sheet" id="pizzaSheet"></dialog>
 
 <p class="sr-only" id="srLive" aria-live="polite"></p>
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button type="button" id="toastAction" hidden></button></div>
