@@ -904,12 +904,152 @@ a:hover .i-arrow, button:hover .i-arrow { transform: translateX(3px); }
 .hero-still { width: 86%; margin: 4% auto; }
 .noscript-deals { margin: 0 0 8px; color: var(--text); }
 
+/* ---------- the corner: call, find us, ask Max (technext.asia's corner tabs, in the shop's colours) ----------
+   Big screens: three tabs on the right edge, text running upwards. Phones and tablets: one round button above the
+   basket opens them as labelled pills. Red is the order action (calling); the greens frame the rest. */
+.corner { position: fixed; right: 0; top: 50%; z-index: 46; translate: 0 -50%; transition: translate .35s var(--ease), opacity .25s; }
+.corner-toggle { display: none; }
+.corner-tabs { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.corner-tab {
+  position: relative; display: flex; align-items: center; gap: 9px; writing-mode: vertical-rl; rotate: 180deg;
+  padding: 18px 13px; border: 0; border-radius: 0 14px 14px 0; background: var(--green-dk); color: var(--on-accent);
+  font: 700 var(--fs-sm)/1 var(--font-display); letter-spacing: .02em; text-decoration: none; cursor: pointer;
+  box-shadow: var(--shadow-btn); transition: translate .25s var(--ease), background .2s;
+}
+.corner-tab::after { content: ""; position: absolute; inset: -5px -8px -5px -5px; }   /* a 44px target on a 42px tab */
+.corner-tab svg { flex: none; width: 18px; height: 18px; rotate: 90deg; }
+.corner-tab.ct-call { background: var(--red); }
+@media (hover: hover) { .corner-tab:hover { translate: -4px 0; } }
+.corner-tab:hover { background: var(--green-deep); }
+.corner-tab.ct-call:hover { background: var(--red-dk); }
+.corner-tab:focus-visible { outline: 2px solid var(--green-dk); outline-offset: 3px; }
+body.ask-open .corner { translate: 110% -50%; opacity: 0; pointer-events: none; }
+body:has(.nav-toggle[aria-expanded="true"]) .corner { display: none; }
+
+@media (max-width: 980px) {
+  .corner { top: auto; right: 22px; bottom: calc(22px + var(--safe-b)); translate: none; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
+  .has-order .corner { bottom: calc(92px + var(--safe-b)); }           /* above the round basket button */
+  body.ask-open .corner { translate: none; opacity: 0; }
+  .corner-toggle {
+    display: grid; place-items: center; width: 52px; height: 52px; border: 0; border-radius: 50%;
+    background: var(--green-dk); color: var(--on-accent); box-shadow: 0 8px 20px rgba(0, 0, 0, .22); transition: background .2s;
+  }
+  .corner-toggle:hover { background: var(--green-deep); }
+  .corner-toggle svg { width: 24px; height: 24px; }
+  .corner-toggle .ct-close, .corner.is-open .corner-toggle .ct-open { display: none; }
+  .corner.is-open .corner-toggle .ct-close { display: block; }
+  .corner-toggle:focus-visible { outline: 2px solid var(--green-dk); outline-offset: 3px; }
+  .corner-tabs { display: none; }
+  .corner.is-open .corner-tabs { display: flex; }
+  .corner-tab {
+    writing-mode: horizontal-tb; rotate: none; min-height: 48px; padding: 0 18px 0 14px; border-radius: 999px;
+    font-size: var(--fs-md); box-shadow: 0 8px 20px rgba(0, 0, 0, .2);
+  }
+  .corner-tab::after { inset: -2px; }
+  .corner-tab svg { rotate: none; }
+  @media (hover: hover) { .corner-tab:hover { translate: -3px 0; } }
+}
+@media (max-width: 560px) {
+  .corner { right: 16px; bottom: calc(16px + var(--safe-b)); }
+  .has-order .corner { bottom: calc(80px + var(--safe-b)); }         /* above the red basket bar */
+}
+
+/* ---------- Ask Max: the shop's chat helper, printed on thermal paper ----------
+   Answers are printed in ink straight on the paper (dotted leaders, prices in Plus Jakarta); what you typed sits in an
+   ink pill. It floats in the corner like the basket on tablets and up; on phones it is a bottom sheet. */
+.ask {
+  position: fixed; right: 22px; bottom: calc(22px + var(--safe-b)); z-index: 54; display: flex; flex-direction: column;
+  width: min(396px, calc(100vw - 44px)); height: min(660px, calc(100dvh - 124px)); overflow: hidden;
+  background: url(../assets/tex/paper.webp) 0 0 / 256px var(--thermal); border-radius: 14px; box-shadow: var(--shadow-lg);
+  animation: cartin .3s var(--ease); transform-origin: bottom right;
+}
+.has-order .ask { bottom: calc(92px + var(--safe-b)); height: min(660px, calc(100dvh - 194px)); }
+.ask[hidden] { display: none; }
+.ask-scrim { position: fixed; inset: 0; z-index: 53; background: rgba(20, 16, 10, .35); animation: fade .25s; }
+.ask-scrim[hidden] { display: none; }
+@media (min-width: 561px) { .ask-scrim { display: none !important; } }
+.ask-head { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 14px; background: var(--green-dk); color: var(--on-accent); }
+.ask-head img { flex: none; width: 38px; height: 38px; border-radius: 10px; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
+.ask-head div { flex: 1; min-width: 0; }
+.ask-head h2 { margin: 0; font: 800 var(--fs-lg)/1.2 var(--font-display); color: var(--on-accent); outline: none; }
+.ask-head p { margin: 2px 0 0; font-size: var(--fs-sm); line-height: 1.3; color: var(--on-green-soft); }
+.ask-head .cart-close { flex: none; }
+.ask-log {
+  flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 18px 16px 14px; overflow-y: auto;
+  overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--scrollbar) transparent;
+}
+.ask-log:focus-visible { outline: 2px solid var(--green-dk); outline-offset: -4px; }
+/* what Max says: printed in ink on the paper */
+.am { display: flex; flex-direction: column; gap: 10px; max-width: 100%; font-size: var(--fs-md); line-height: 1.55; color: var(--ink); animation: fade .2s; }
+.am p { margin: 0; }
+.am b { font-weight: 700; }
+.am a { color: var(--green-text); font-weight: 600; text-underline-offset: 3px; }
+.am-label { font: 800 .75rem/1 var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.am-note { font-size: var(--fs-sm); color: var(--muted); }
+.am-rows { margin: 0; padding: 0; list-style: none; }
+.am-rows li { display: grid; grid-template-columns: auto minmax(12px, 1fr) auto; align-items: baseline; gap: 8px; padding: 3px 0; }
+.am-rows li > i { border-bottom: 1.5px dotted var(--leader); transform: translateY(-4px); }
+.am-rows li > b { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.am-rows li.is-today { color: var(--red); }
+.am-rows li.is-today > i { border-color: currentColor; }
+.am-rows small { display: block; font-size: var(--fs-sm); color: var(--muted); }
+.am-rule { height: 0; border-top: 2px dashed rgba(31, 31, 31, .22); }
+/* a pizza, as on the menu: the top-view render, the name in menu-board caps, the three sizes, one red add */
+.am-pz { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 4px 14px; align-items: start; }
+.am-pz img { grid-row: span 2; width: 72px; height: 72px; filter: drop-shadow(0 5px 5px rgba(0, 0, 0, .2)); }
+.am-pz-name { margin: 2px 0 0 !important; font: 700 var(--fs-md)/1.25 var(--font-display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+.am-pz-ing { font-size: var(--fs-sm); line-height: 1.45; color: var(--text); }
+.am-pz .tags { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.am-sizes { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.am-sizes button {
+  display: grid; justify-items: center; gap: 1px; min-height: 52px; padding: 6px 4px; border: 1px solid var(--control); border-radius: 10px;
+  background: var(--surface); color: var(--ink); font: 600 var(--fs-xs)/1.2 var(--font-body); cursor: pointer; transition: background .2s, border-color .2s;
+}
+.am-sizes button b { font: 700 var(--fs-md) var(--font-display); font-variant-numeric: tabular-nums; }
+.am-sizes button:hover { background: var(--chip); }
+.am-sizes button.is-main { border-color: var(--red); background: var(--red); color: var(--on-accent); }
+.am-sizes button.is-main:hover { background: var(--red-dk); }
+.am-sizes button.is-done { border-color: var(--green-dk); background: var(--green-dk); color: var(--on-accent); }
+/* list rows you can open (a pizza, a deal, a dish) */
+.am-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.am-list button {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 5px 10px 5px 6px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .2s, background .2s;
+}
+.am-list button:hover { border-color: var(--control); background: var(--chip); }
+.am-list button.no-img { grid-template-columns: minmax(0, 1fr) auto; padding-left: 12px; }
+.am-list img { width: 40px; height: 40px; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .18)); }
+.am-list .nm { font: 700 var(--fs-sm)/1.25 var(--font-display); letter-spacing: .08em; text-transform: uppercase; }
+.am-list .nm small { display: block; margin-top: 2px; font: 400 var(--fs-xs)/1.3 var(--font-body); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.am-list .pr { font: 700 var(--fs-sm) var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.am-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.am-acts .btn, .am-acts .mini-btn { min-height: 44px; }
+/* what you typed */
+.au { align-self: flex-end; max-width: 84%; padding: 9px 14px; border-radius: 16px 16px 4px 16px; background: var(--ink); color: var(--on-accent); font-size: var(--fs-md); line-height: 1.45; overflow-wrap: anywhere; animation: fade .2s; }
+/* quick questions */
+.ask-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ask-chips button { min-height: 44px; padding: 6px 14px; border: 1px solid var(--control); border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 var(--fs-sm) var(--font-display); cursor: pointer; transition: background .2s; }
+.ask-chips button:hover { background: var(--chip); }
+.ask-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px 12px calc(12px + var(--safe-b)); border-top: 1px solid var(--line); background: var(--surface); }
+.ask-form input { min-width: 0; min-height: 48px; padding: 10px 14px; border: 1px solid var(--control); border-radius: 8px; background: var(--surface); font: 400 var(--fs-base) var(--font-body); color: var(--ink); }
+.ask-form input::placeholder { color: var(--placeholder); }
+.ask-form input:focus-visible { outline: 2px solid var(--green-dk); outline-offset: 2px; border-color: var(--green-dk); }
+.ask-form button { display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 8px; background: var(--ink); color: var(--on-accent); cursor: pointer; }
+.ask-form button:hover { background: #000; }
+.ask-form button svg { width: 20px; height: 20px; }
+@media (max-width: 560px) {
+  .ask, .has-order .ask { left: 0; right: 0; bottom: 0; width: 100%; height: min(88dvh, 740px); border-radius: 16px 16px 0 0; animation: sheetin .32s var(--ease); }
+  .ask-log { padding-inline: 14px; }
+}
+@media (forced-colors: active) { .corner-tab, .corner-toggle, .ask-form button { border: 1px solid ButtonText; } }
+
 /* ---------- reduced motion: keep fades and colour, drop movement ---------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-property: opacity, color, background-color, border-color, box-shadow !important; }
   .hero-pizza.is-loading::before, .bump, .add-btn.tick .num, .is-flash { animation: none !important; }
-  .cart, .scrim { animation: fade .2s !important; }
+  .cart, .scrim, .ask, .ask-scrim, .am, .au { animation: fade .2s !important; }
+  .corner, .corner-tab { transition-property: opacity, background-color !important; }
   .cart-done.play .done-lid, .cart-done.play .done-stamp { animation: fade .3s both !important; }
   .deal:hover .tower { translate: none !important; }
   .pbox:hover .pbox-base img, .btn:active, a:hover .i-arrow, button:hover .i-arrow, .wedge:hover, .wedge.is-on, .wedge:focus-visible { transform: none !important; }

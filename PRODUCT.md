@@ -28,6 +28,7 @@ Orders arrive by phone, at the counter and through the website; pizzas leave in 
 - Business details are placeholders until the owner provides real ones: address Wollankstr. 20, Berlin; phone 030 123 456 78; social handles and web address not yet decided (placeholder @pizzamax.berlin / pizzamax.berlin). Every material must list placeholders in one "replace before printing" place.
 - Not yet decided by the owner: last-order times for delivery and pickup (the website only refuses to promise a time after closing), and any bake details beyond the stone oven and 24-hour dough (no oven temperature or bake time is claimed until confirmed).
 - Allergen data exists only for pizzas; other dishes say "on request".
+- Ask Max, the site's chat helper, answers from this same data in the browser (no AI service, nothing sent anywhere); it says so when it doesn't know and gives the phone number.
 - Self-hosted fonts and scripts only (GDPR, Germany); no third-party requests.
 
 ## Brand Commitments

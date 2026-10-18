@@ -516,6 +516,7 @@ function openCart(open, focusTo) {
   $('#cartBtn').setAttribute('aria-expanded', open);
   $('#cartBtn .sr-only').textContent = open ? 'Close basket' : 'Open basket';
   if (open) {
+    document.dispatchEvent(new Event('basketopen'));    // Ask Max steps aside for the basket
     lastFocus = document.activeElement;
     showStep('basket');
     renderCart();
@@ -1296,6 +1297,23 @@ function flyToCart(from, thumb) {
   ], { duration: 720, easing: 'cubic-bezier(.45, 0, .2, 1)' }).onfinish = () => { dot.remove(); bump(); };
 }
 
+/* ================= THE CORNER: call, find us, ask Max ================= */
+// phones and tablets: one round button opens the three; Escape or a tap elsewhere closes them
+const corner = $('#corner'), cornerToggle = $('#cornerToggle');
+function openCorner(open) {
+  corner.classList.toggle('is-open', open);
+  cornerToggle.setAttribute('aria-expanded', open);
+  cornerToggle.querySelector('.sr-only').textContent = open ? 'Close contact options' : 'Contact us';
+}
+cornerToggle.addEventListener('click', () => openCorner(!corner.classList.contains('is-open')));
+document.addEventListener('click', (e) => { if (corner.classList.contains('is-open') && !corner.contains(e.target)) openCorner(false); });
+corner.addEventListener('keydown', (e) => { if (e.key === 'Escape' && corner.classList.contains('is-open')) { openCorner(false); cornerToggle.focus(); } });
+$$('.corner-tab', corner).forEach((t) => t.addEventListener('click', () => openCorner(false)));
+// Ask Max loads on first use (js/chat.js) and reads the menu, prices, hours and delivery area from here
+$$('[data-ask]').forEach((b) => b.addEventListener('click', () => {
+  import('./chat.js').then((m) => m.openAsk(b)).catch(() => toast('The chat could not load. Call us on 030 123 456 78.'));
+}));
+
 /* ================= MOTION (the pizza turns as you scroll; view switches get a short entrance) ================= */
 const EASE = [0.16, 1, 0.3, 1];
 import('../vendor/motion/motion.esm.js').then(({ animate, scroll, stagger }) => {
@@ -1311,3 +1329,16 @@ import('../vendor/motion/motion.esm.js').then(({ animate, scroll, stagger }) => 
     if (e.detail === 'boxes') animate('.pbox-lid', { transform: ['rotateX(100deg)', 'rotateX(48deg)'] }, { duration: .7, delay: stagger(.05), ease: EASE });
   });
 }).catch(() => {});
+
+/* ================= FOR ASK MAX (js/chat.js): the shop's own data and actions, one source for both ================= */
+export const shop = {
+  PIZZAS, BOARD, DEALS, AREAS, HOURS, SIZES, SIZE_NAME, SIZE_SHORT, CRUST, ALLERGENS, ADDITIVES, BASE_CODES, MIN_DELIVERY, ICON, TAGS,
+  contact: { phone: '030 123 456 78', tel: '+493012345678', address: 'Wollankstr. 20, 13187 Berlin' },
+  byId, eur, esc, sized, separately, shopState, when, fmtH, zipState, areaOf, berlinNow, reduced,
+  cartCount, cartSum,
+  addPizza: (p, k, withCrust, from) => addToCart(lineItem(p, k, !!withCrust), from),
+  addItem: (it, from) => addToCart({ name: it.n, size: it.d, price: it.p }, from),
+  useZip: (v) => checkZip(v),
+  openBasket: () => openCart(true),
+  toMenu,
+};

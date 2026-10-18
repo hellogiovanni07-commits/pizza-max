@@ -421,6 +421,32 @@
 
 <dialog class="sheet" id="pizzaSheet"></dialog>
 
+<!-- in the corner, the three ways to reach the shop (as on technext.asia): call, find us, ask Max.
+     Tabs on the right edge on big screens; on phones and tablets one round button opens them -->
+<nav class="corner" id="corner" aria-label="Contact Pizza Max">
+  <button class="corner-toggle" id="cornerToggle" type="button" aria-expanded="false" aria-controls="cornerTabs">
+    <svg class="ct-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5h15a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5h-1A1.5 1.5 0 0 1 3 16V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <svg class="ct-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="sr-only">Contact us</span>
+  </button>
+  <div class="corner-tabs" id="cornerTabs">
+    <a class="corner-tab ct-call" href="tel:+493012345678">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span>Call to order</span>
+    </a>
+    <a class="corner-tab ct-find" href="#kontakt">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span>Find us</span>
+    </a>
+    <button class="corner-tab ct-ask" type="button" data-ask aria-haspopup="dialog" aria-controls="askMax" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5h15a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5h-1A1.5 1.5 0 0 1 3 16V7a1.5 1.5 0 0 1 1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>Ask Max</span>
+    </button>
+  </div>
+</nav>
+<!-- Ask Max: answers from our menu, prices, hours and delivery area, in the browser (js/chat.js fills it on first open) -->
+<div class="ask-scrim" id="askScrim" hidden></div>
+<section class="ask" id="askMax" role="dialog" aria-labelledby="askTitle" hidden></section>
 <p class="sr-only" id="srLive" aria-live="polite"></p>
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText"></span><button type="button" id="toastAction" hidden></button></div>
 
